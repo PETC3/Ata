@@ -1,0 +1,98 @@
+<!-- templates/atas_list.html -->
+{% extends "base.html" %}
+
+{% block title %}Histórico de Atas - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Histórico de Atas</h1>
+    <a href="{{ url_for('new_ata') }}" class="btn btn-success">Criar Nova Ata</a>
+</div>
+
+{% if atas %}
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th scope="col">Data</th>
+                <th scope="col">Projeto</th>
+                <th scope="col">Formato</th>
+                <th scope="col">Local/Plataforma</th>
+                <th scope="col">Criada em</th>
+                <th scope="col">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ata in atas %}
+            <tr>
+                <td>{{ ata.date.strftime('%d/%m/%Y') if ata.date else 'N/A' }}</td>
+                <td>{{ ata.project.name if ata.project else 'Projeto não encontrado' }}</td>
+                <td>{{ ata.format }}</td>
+                <td>{{ ata.location_or_platform if ata.location_or_platform else '-' }}</td>
+                <td>{{ ata.created_at.strftime('%d/%m/%Y %H:%M') if ata.created_at else 'N/A' }}</td>
+                <td>
+                    <a href="{{ url_for('download_ata', ata_id=ata.id) }}" class="btn btn-sm btn-primary" title="Baixar PDF">
+                        <i class="fas fa-download"></i> Download
+                    </a>
+                    <!-- Adicionar botões de Editar/Excluir Ata aqui futuramente, se necessário -->
+                    <!--
+                    <a href="#" class="btn btn-sm btn-warning" title="Editar Ata (Futuro)">
+                        <i class="fas fa-edit"></i> Editar
+                    </a>
+                    <form action="#" method="POST" style="display:inline;" onsubmit="return confirm('Tem certeza?');">
+                        <button type="submit" class="btn btn-sm btn-danger" title="Excluir Ata (Futuro)">
+                            <i class="fas fa-trash"></i> Excluir
+                        </button>
+                    </form>
+                    -->
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Controles de Paginação (se pagination foi passado pela rota) -->
+{% if pagination %}
+<nav aria-label="Navegação de Atas">
+    <ul class="pagination justify-content-center">
+        <!-- Link para Página Anterior -->
+        <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for('list_atas', page=pagination.prev_num) if pagination.has_prev else '#' }}" aria-label="Anterior">
+                <span aria-hidden="true">«</span>
+            </a>
+        </li>
+        <!-- Links das Páginas -->
+        {% for page_num in pagination.iter_pages() %}
+            {% if page_num %}
+                <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                    <a class="page-link" href="{{ url_for('list_atas', page=page_num) }}">{{ page_num }}</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+            {% endif %}
+        {% endfor %}
+        <!-- Link para Próxima Página -->
+        <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for('list_atas', page=pagination.next_num) if pagination.has_next else '#' }}" aria-label="Próxima">
+                <span aria-hidden="true">»</span>
+            </a>
+        </li>
+    </ul>
+</nav>
+<p class="text-center text-muted">Exibindo página {{ pagination.page }} de {{ pagination.pages }}. Total de {{ pagination.total }} atas.</p>
+{% endif %}
+
+{% else %}
+<div class="alert alert-info" role="alert">
+    Nenhuma ata foi criada ainda. <a href="{{ url_for('new_ata') }}" class="alert-link">Crie a primeira!</a>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<!-- Adicionar Font Awesome para ícones (opcional) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+{% endblock %}

@@ -1,0 +1,69 @@
+<!-- templates/_form_helpers.html -->
+{% macro render_field(field, label_visible=true, **kwargs) %}
+    <div class="mb-3">
+        {% if label_visible %}
+            {{ field.label(class="form-label") }}
+        {% endif %}
+        {{ field(class="form-control" + (" is-invalid" if field.errors else ""), **kwargs) }}
+        {% if field.errors %}
+            <div class="invalid-feedback">
+                {% for error in field.errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% if field.description %}
+            <div class="form-text">{{ field.description }}</div>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{% macro render_checkbox_field(field, **kwargs) %}
+    <div class="form-check mb-3">
+      {{ field(class="form-check-input" + (" is-invalid" if field.errors else ""), **kwargs) }}
+      {{ field.label(class="form-check-label") }}
+      {% if field.errors %}
+            <div class="invalid-feedback d-block"> {# d-block para feedback aparecer abaixo do checkbox #}
+                {% for error in field.errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+      {% endif %}
+       {% if field.description %}
+            <div class="form-text">{{ field.description }}</div>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{# Macro específica para o MultiCheckboxField (renderiza a lista interna) #}
+{% macro render_multicheckbox_field(field, **kwargs) %}
+     <fieldset class="mb-3">
+        <legend class="col-form-label col-sm-2 pt-0"> {{ field.label }}</legend>
+        <div id="{{ field.id }}-container" class="border p-2 rounded bg-light" style="max-height: 200px; overflow-y: auto;">
+             {# Loop sobre as opções/subfields do campo #}
+             {% for subfield in field %}
+                <div class="form-check">
+                    {{ subfield(class="form-check-input" + (" is-invalid" if field.errors else ""), **kwargs) }} {# Aplica is-invalid no input se o campo principal tiver erro #}
+                    {{ subfield.label(class="form-check-label") }}
+                </div>
+             {% endfor %}
+             {% if not field.choices %}
+                 <p class="text-muted p-2" id="{{ field.id }}-placeholder">Nenhuma opção disponível.</p>
+             {% endif %}
+        </div>
+        {# Exibir erro específico para o campo MultiCheckbox como um todo #}
+        {% if field.errors %}
+            <div class="invalid-feedback d-block">
+                {{ field.errors | join(', ') }}
+            </div>
+        {% endif %}
+         {% if field.description %}
+            <div class="form-text">{{ field.description }}</div>
+        {% endif %}
+    </fieldset>
+{% endmacro %}
+
+
+{% macro render_submit_field(field, **kwargs) %}
+    {{ field(class="btn", **kwargs) }}
+{% endmacro %}

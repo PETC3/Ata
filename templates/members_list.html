@@ -1,0 +1,36 @@
+<!-- templates/members_list.html -->
+{% extends "base.html" %} <!-- Reutilizar estrutura base -->
+
+{% block content %} <!-- Conteúdo específico desta página -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>{{ title }}</h1>
+    <a href="{{ url_for('add_member') }}" class="btn btn-success">Adicionar Novo Membro</a>
+</div>
+
+{% if members %}
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for member in members %}
+        <tr>
+            <td>{{ member.name }}</td>
+            <td>
+                <a href="{{ url_for('edit_member', member_id=member.id) }}" class="btn btn-sm btn-warning">Editar</a>
+                <!-- Botão de Excluir dentro de um formulário POST -->
+                <form action="{{ url_for('delete_member', member_id=member.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Tem certeza que deseja excluir este membro?');">
+                     <button type="submit" class="btn btn-sm btn-danger">Excluir</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>Nenhum membro cadastrado ainda.</p>
+{% endif %}
+{% endblock %}
