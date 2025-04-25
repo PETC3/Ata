@@ -1,0 +1,27 @@
+# Arquivo: .gitignore
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ambiente Virtual
+venv/
+.*/ # Qualquer pasta começando com ponto (ex: .vscode, .idea)
+
+# Banco de dados SQLite e configs não versionadas
+instance/
+*.sqlite3
+*.db
+
+# Arquivos de ambiente
+.env
+*.env
+
+# Logs e arquivos de upload (se não quiser versionar logos)
+*.log
+# uploads/ # Descomente se NÃO quiser versionar os logos enviados
+
+# Arquivos específicos de SO
+.DS_Store
+Thumbs.db
