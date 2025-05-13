@@ -5,9 +5,18 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Ambiente Virtual
+# Ambientes Virtuais
 venv/
-.*/ # Qualquer pasta começando com ponto (ex: .vscode, .idea)
+.venv/  # Adicionar explicitamente para o caso de usarem .venv
+env/    # Outro nome comum
+
+# IDEs e ferramentas de projeto
+.vscode/
+.idea/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/ # Relatórios de cobertura
 
 # Banco de dados SQLite e configs não versionadas
 instance/
@@ -16,7 +25,8 @@ instance/
 
 # Arquivos de ambiente
 .env
-*.env
+*.env* # Para cobrir .env.development, .env.production etc.
+!.env.example # Frequentemente se versiona um exemplo
 
 # Logs e arquivos de upload (se não quiser versionar logos)
 *.log
@@ -25,3 +35,12 @@ instance/
 # Arquivos específicos de SO
 .DS_Store
 Thumbs.db
+
+# Arquivos de dependência do Poetry (se usado)
+# poetry.lock
+# pyproject.toml # Apenas se não for o arquivo principal do projeto
+
+# Arquivos de build/distribuição
+dist/
+build/
+*.egg-info/
