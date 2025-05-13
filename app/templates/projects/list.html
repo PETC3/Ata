@@ -1,70 +1,87 @@
 {% extends "base.html" %}
 
+{% block title %}Lista de Projetos{% endblock %}
+
 {% block content %}
-    <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #ccc;">
-        <h1>{{ title }}</h1>
-        <a href="{{ url_for('add_project') }}" class="btn btn-success" style="padding: 8px 15px; background-color: #2ecc71; color: white; text-decoration: none; border-radius: 4px;">
-            + Adicionar Projeto
+    <div class="page-header">
+        <h1>{{ title if title else "Projetos" }}</h1>
+    </div>
+
+    <div class="page-actions">
+        <a href="{{ url_for('add_project') }}" class="btn-primary-action">
+            <ion-icon name="add-circle-outline"></ion-icon> Adicionar Projeto
         </a>
     </div>
 
-    {% if projects %}
-        <table style="width: 100%; border-collapse: collapse;">
-            <thead>
-                <tr style="background-color: #ecf0f1; border-bottom: 2px solid #bdc3c7;">
-                    <th style="padding: 12px; text-align: left; width: 60px;">Logo</th>
-                    <th style="padding: 12px; text-align: left;">Nome do Projeto</th>
-                    <th style="padding: 12px; text-align: left;">Membros</th>
-                    <th style="padding: 12px; text-align: center; width: 200px;">Ações</th> {# Aumentei a largura para mais botões #}
-                </tr>
-            </thead>
-            <tbody>
-                {% for project in projects %}
-                    <tr style="border-bottom: 1px solid #ecf0f1;">
-                        <td style="padding: 10px; text-align: center; vertical-align: middle;">
-                            {% if project.logo %}
-                                {# Gera a URL para o arquivo de logo na pasta de uploads #}
-                                <img src="{{ url_for('static', filename='uploads/' + project.logo) }}" alt="Logo {{ project.name }}" style="max-width: 40px; max-height: 40px; border-radius: 4px; object-fit: contain;">
-                            {% else %}
-                                <span style="color: #bdc3c7; font-size: 0.9em;">Sem logo</span>
-                            {% endif %}
-                        </td>
-                        <td style="padding: 12px; vertical-align: middle;">{{ project.name }}</td>
-                        <td style="padding: 12px; vertical-align: middle; font-size: 0.9em; color: #555;">
-                            {# Lista os nomes dos membros associados #}
-                            {% if project.members %}
-                                {{ project.members | map(attribute='name') | join(', ') }}
-                            {% else %}
-                                Nenhum membro associado.
-                            {% endif %}
-                        </td>
-                        <td style="padding: 12px; text-align: center; vertical-align: middle;">
-                             <!-- Botão Criar Ata para este Projeto -->
-                            <a href="{{ url_for('create_ata', project_id=project.id) }}" class="btn btn-sm btn-info" style="padding: 5px 10px; background-color: #5dade2; color: white; text-decoration: none; border-radius: 3px; margin-right: 5px;" title="Criar Ata para {{ project.name }}">
-                                Criar Ata
-                            </a>
-
-                            <!-- Botão Editar Projeto -->
-                            <a href="{{ url_for('edit_project', id=project.id) }}" class="btn btn-sm btn-warning" style="padding: 5px 10px; background-color: #f39c12; color: white; text-decoration: none; border-radius: 3px; margin-right: 5px;">
-                                Editar
-                            </a>
-
-                            <!-- Botão Excluir Projeto (formulário POST) -->
-                            <form action="{{ url_for('delete_project', id=project.id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Tem certeza que deseja excluir o projeto \'{{ project.name }}\' e TODAS as suas atas associadas? Esta ação não pode ser desfeita.');">
-                                <!-- Token CSRF -->
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button type="submit" class="btn btn-sm btn-danger" style="padding: 5px 10px; background-color: #e74c3c; color: white; border: none; border-radius: 3px; cursor: pointer;">
-                                    Excluir
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <div class="alert alert-info" style="background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; padding: 15px; border-radius: 4px; margin-top: 20px;">
-            Nenhum projeto cadastrado ainda. <a href="{{ url_for('add_project') }}" style="color: #0c5460; font-weight: bold;">Adicione o primeiro!</a>
+    <div class="content-panel">
+        <div class="panel-header">
+            <h2>Projetos Cadastrados</h2>
         </div>
-    {% endif %}
+        <div class="panel-body">
+            {% if projects %}
+                <table class="styled-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 60px; text-align: center;">Logo</th> {# Mantendo estilo inline para largura/alinhamento específico se necessário #}
+                            <th>Nome do Projeto</th>
+                            <th>Membros</th>
+                            <th style="width: 220px; text-align: center;">Ações</th> {# Ajuste de largura para acomodar botões #}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for project in projects %}
+                            <tr>
+                                <td style="text-align: center; vertical-align: middle;">
+                                    {% if project.logo %}
+                                        <img src="{{ url_for('static', filename='uploads/' + project.logo) }}" alt="Logo {{ project.name|e }}" class="table-logo"> {# Nova classe para logo na tabela #}
+                                    {% else %}
+                                        <span class="no-logo-placeholder">-</span> {# Nova classe para placeholder #}
+                                    {% endif %}
+                                </td>
+                                <td style="vertical-align: middle;">{{ project.name }}</td>
+                                <td style="vertical-align: middle; font-size: 0.9em;">
+                                    {% if project.members %}
+                                        <span class="member-list-cell">
+                                            {# Construir a string de primeiros nomes diretamente #}
+                                            {% set member_names_processed = [] %}
+                                            {% for member in project.members %}
+                                                {% set name_parts = member.name.split(' ') %}
+                                                {% if name_parts %} {# Garante que há pelo menos uma parte no nome #}
+                                                    {% set _ = member_names_processed.append(name_parts[0]) %} {# O _ suprime a saída do append #}
+                                                {% endif %}
+                                            {% endfor %}
+                                            {{ member_names_processed | join(', ') }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">Nenhum membro</span>
+                                    {% endif %}
+                                </td>
+                                <td class="actions-cell" style="vertical-align: middle;"> {# Adicionado vertical-align aqui também #}
+                                    <a href="{{ url_for('create_ata', project_id=project.id) }}" class="btn-icon btn-add-ata" title="Criar Ata para {{ project.name|e }}">
+                                        <ion-icon name="document-text-outline"></ion-icon> {# Ícone para Criar Ata #}
+                                    </a>
+                                    <a href="{{ url_for('edit_project', id=project.id) }}" class="btn-icon btn-edit" title="Editar Projeto">
+                                        <ion-icon name="create-outline"></ion-icon>
+                                    </a>
+                                    <form action="{{ url_for('delete_project', id=project.id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Tem certeza que deseja excluir o projeto \'{{ project.name|e }}\' e TODAS as suas atas associadas? Esta ação não pode ser desfeita.');">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn-icon btn-delete" title="Excluir Projeto">
+                                            <ion-icon name="trash-outline"></ion-icon>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="flash-messages">
+                    <li class="flash-info">
+                        Nenhum projeto cadastrado ainda. <a href="{{ url_for('add_project') }}" style="font-weight: bold; color: var(--black1);">Adicione o primeiro!</a>
+                    </li>
+                </div>
+                 {# Ou <p class="empty-message"> ... </p> #}
+            {% endif %}
+        </div>
+    </div>
 {% endblock %}

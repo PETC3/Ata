@@ -1,5 +1,6 @@
 # seu_projeto_flask/run.py
 
+from flask import Flask
 from app import create_app, db # Importa a factory e a instância do DB
 from app.models import User, Member, Project, Ata # Importa os modelos
 from flask_migrate import Migrate # Importa Migrate
