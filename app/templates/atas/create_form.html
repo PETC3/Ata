@@ -1,125 +1,144 @@
-{# seu_projeto_flask/app/templates/atas/create_form.html - Atualizado com JS #}
-
 {% extends "base.html" %}
 
+{% block title %}{{ title if title else "Criar Nova Ata" }}{% endblock %}
+
 {% block content %}
-    <div class="page-header" style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #ccc;">
-        <h1>{{ title }}</h1>
+    <div class="page-header">
+        <h1>{{ title if title else "Criar Nova Ata" }}</h1>
         {% if selected_project %}
-            <p class="lead" style="color: #555;">Criando ata para o projeto: <strong>{{ selected_project.name }}</strong></p>
+            <p class="lead">Criando ata para o projeto: <strong>{{ selected_project.name }}</strong></p>
         {% endif %}
     </div>
 
-    <form action="{{ url_for('create_ata', project_id=selected_project.id if selected_project else None) }}" method="post" novalidate>
-        {{ form.hidden_tag() }} {# CSRF #}
+    <div class="content-panel"> {# Envolvendo o formulário em um painel #}
+        <div class="panel-body">
+            <form action="{{ url_for('create_ata', project_id=selected_project.id if selected_project else None) }}" method="post" novalidate>
+                {{ form.hidden_tag() }} {# CSRF #}
 
-        {# Campo Projeto (Dropdown) - ID é importante para o JS #}
-        <div class="form-group" style="margin-bottom: 20px;">
-            {{ form.project.label(class="form-label", style="display: block; margin-bottom: 5px; font-weight: bold;") }}
-            {{ form.project(id="project-select", class="form-control", style="width: 100%; max-width: 500px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;") }}
-            {% if form.project.errors %}
-                <ul class="errors" style="color: #c0392b; font-size: 0.9em; list-style: none; padding-left: 0; margin-top: 5px;">
-                    {% for error in form.project.errors %}<li>{{ error }}</li>{% endfor %}
-                </ul>
-            {% endif %}
-        </div>
+                {# Campo Projeto (Dropdown) #}
+                <div class="form-group">
+                    {{ form.project.label(class="form-label") }}
+                    {{ form.project(id="project-select", class="form-control") }} {# ID é importante para o JS #}
+                    {% if form.project.errors %}
+                        <div class="form-error">
+                            {% for error in form.project.errors %}<span>{{ error }}</span>{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
 
-        {# Outros campos (Data/Hora, Local, Detalhes) - Sem alterações #}
-        <div class="form-group" style="margin-bottom: 20px;">
-            {{ form.meeting_datetime.label(class="form-label", style="display: block; margin-bottom: 5px; font-weight: bold;") }}
-            {{ form.meeting_datetime(class="form-control", style="padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;") }}
-            {% if form.meeting_datetime.errors %}<ul class="errors">{% for e in form.meeting_datetime.errors %}<li>{{e}}</li>{% endfor %}</ul>{% endif %}
-        </div>
-        <div class="form-group" style="margin-bottom: 20px;">
-            {{ form.location_type.label(class="form-label", style="display: block; margin-bottom: 5px; font-weight: bold;") }}
-            {{ form.location_type(class="form-control", style="width: 100%; max-width: 300px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;") }}
-            {% if form.location_type.errors %}<ul class="errors">{% for e in form.location_type.errors %}<li>{{e}}</li>{% endfor %}</ul>{% endif %}
-        </div>
-        <div class="form-group" style="margin-bottom: 20px;">
-            {{ form.location_details.label(class="form-label", style="display: block; margin-bottom: 5px; font-weight: bold;") }}
-            {{ form.location_details(class="form-control", size=80, style="width: 100%; max-width: 500px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;") }}
-            {% if form.location_details.errors %}<ul class="errors">{% for e in form.location_details.errors %}<li>{{e}}</li>{% endfor %}</ul>{% endif %}
-        </div>
+                {# Outros campos (Data/Hora, Tipo de Local, Detalhes do Local) #}
+                <div class="form-group">
+                    {{ form.meeting_datetime.label(class="form-label") }}
+                    {{ form.meeting_datetime(class="form-control") }}
+                    {% if form.meeting_datetime.errors %}
+                        <div class="form-error">
+                            {% for e in form.meeting_datetime.errors %}<span>{{e}}</span>{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
 
-        {# Campo Membros Presentes - O container interno terá o ID para o JS #}
-        <div id="present-members-container" class="form-group" style="margin-bottom: 20px;">
-            {{ form.present_members.label(class="form-label", style="display: block; margin-bottom: 10px; font-weight: bold;") }}
-            {# ID adicionado aqui para o JS saber onde colocar as checkboxes #}
-            <div id="members-checkbox-list" class="checkbox-list" style="min-height: 50px; max-height: 250px; overflow-y: auto; border: 1px solid #ccc; padding: 15px; border-radius: 4px; background-color: #fdfdfd;">
-                {# Conteúdo inicial (será substituído pelo JS) #}
-                <p style="color: #777;">Selecione um projeto para carregar os membros.</p>
-            </div>
-            {% if form.present_members.errors %}
-                <ul class="errors" style="color: #c0392b; font-size: 0.9em; list-style: none; padding-left: 0; margin-top: 5px;">
-                    {% for error in form.present_members.errors %}<li>{{ error }}</li>{% endfor %}
-                </ul>
-            {% endif %}
-        </div>
+                <div class="form-group">
+                    {{ form.location_type.label(class="form-label") }}
+                    {{ form.location_type(class="form-control") }}
+                    {% if form.location_type.errors %}
+                        <div class="form-error">
+                            {% for e in form.location_type.errors %}<span>{{e}}</span>{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
 
-        {# Campo Notas / Assuntos Tratados - Sem alterações #}
-        <div class="form-group" style="margin-bottom: 20px;">
-            {{ form.notes.label(class="form-label", style="display: block; margin-bottom: 5px; font-weight: bold;") }}
-            {{ form.notes(rows=10, class="form-control", style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-family: sans-serif;") }}
-            {% if form.notes.errors %}<ul class="errors">{% for e in form.notes.errors %}<li>{{e}}</li>{% endfor %}</ul>{% endif %}
-        </div>
+                <div class="form-group">
+                    {{ form.location_details.label(class="form-label") }}
+                    {{ form.location_details(class="form-control", size=80) }}
+                    {% if form.location_details.errors %}
+                        <div class="form-error">
+                            {% for e in form.location_details.errors %}<span>{{e}}</span>{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
 
-        {# Botões de Ação - Sem alterações #}
-        <div class="form-actions">
-            {{ form.submit(class="btn btn-primary", style="padding: 10px 20px; background-color: #27ae60; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1.1em;") }}
-            <a href="{{ url_for('home') }}" class="btn btn-secondary" style="margin-left: 10px; color: #555; text-decoration: none;">Cancelar</a>
+                {# Campo Membros Presentes #}
+                <div id="present-members-container" class="form-group">
+                    {{ form.present_members.label(class="form-label") }}
+                    {# ID adicionado aqui para o JS saber onde colocar as checkboxes #}
+                    <div id="members-checkbox-list" class="checkbox-list-container"> {# Nova classe para estilizar o contêiner #}
+                        <p class="checkbox-list-placeholder">Selecione um projeto para carregar os membros.</p> {# Nova classe para placeholder #}
+                    </div>
+                    {% if form.present_members.errors %}
+                        <div class="form-error">
+                            {% for error in form.present_members.errors %}<span>{{ error }}</span>{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                {# Campo Notas / Assuntos Tratados #}
+                <div class="form-group">
+                    {{ form.notes.label(class="form-label") }}
+                    {{ form.notes(rows=10, class="form-control") }}
+                    {% if form.notes.errors %}
+                        <div class="form-error">
+                            {% for e in form.notes.errors %}<span>{{e}}</span>{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                {# Botões de Ação #}
+                <div class="form-actions">
+                    <a href="{{ url_for('home') }}" class="btn-cancel">Cancelar</a> {# Usando a classe .btn-cancel #}
+                    {{ form.submit(class="btn-submit") }} {# Usando a classe .btn-submit #}
+                </div>
+            </form>
         </div>
-    </form>
+    </div>
 {% endblock %}
 
 {% block scripts %}
-    {# Adiciona o JavaScript para carregar membros dinamicamente #}
+    {# Seu JavaScript permanece o mesmo, mas os estilos das checkboxes serão controlados por CSS #}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const projectSelect = document.getElementById('project-select');
             const membersListDiv = document.getElementById('members-checkbox-list');
+            const placeholderText = '<p class="checkbox-list-placeholder">Selecione um projeto para carregar os membros.</p>';
+            const loadingText = '<p class="checkbox-list-placeholder">Carregando membros...</p>';
 
             function fetchAndRenderMembers(projectId) {
-                // Limpa a lista atual e mostra mensagem de carregamento
-                membersListDiv.innerHTML = '<p style="color: #777;">Carregando membros...</p>';
+                membersListDiv.innerHTML = loadingText;
 
                 if (!projectId) {
-                    membersListDiv.innerHTML = '<p style="color: #777;">Selecione um projeto para carregar os membros.</p>';
-                    return; // Sai se nenhum projeto for selecionado
+                    membersListDiv.innerHTML = placeholderText;
+                    return;
                 }
 
-                // Faz a requisição para a API
                 fetch(`/api/project/${projectId}/members`)
                     .then(response => {
                         if (!response.ok) {
-                            // Lança um erro se a resposta não for OK (ex: 404, 500)
                             throw new Error(`Erro HTTP: ${response.status}`);
                         }
-                        return response.json(); // Converte a resposta para JSON
+                        return response.json();
                     })
                     .then(data => {
-                        membersListDiv.innerHTML = ''; // Limpa a área antes de adicionar novos
+                        membersListDiv.innerHTML = ''; 
 
                         if (data.members && data.members.length > 0) {
                             const list = document.createElement('ul');
-                            list.style.listStyle = 'none';
-                            list.style.padding = '0';
-                            list.style.margin = '0';
+                            // Estilos de ul e li serão feitos via CSS com a classe .checkbox-list
+                            list.className = 'checkbox-list'; // Adiciona uma classe à UL
 
                             data.members.forEach(member => {
                                 const listItem = document.createElement('li');
-                                listItem.style.marginBottom = '8px'; // Espaçamento entre checkboxes
+                                // listItem.style.marginBottom = '8px'; // Removido, será feito via CSS
 
                                 const checkbox = document.createElement('input');
                                 checkbox.type = 'checkbox';
-                                checkbox.name = 'present_members'; // Nome do campo esperado pelo form Flask
-                                checkbox.value = member.id;       // Valor é o ID do membro
+                                checkbox.name = 'present_members';
+                                checkbox.value = member.id;
                                 checkbox.id = `member-${member.id}`;
-                                checkbox.style.marginRight = '5px'; // Espaço entre checkbox e label
+                                // checkbox.style.marginRight = '5px'; // Removido
 
                                 const label = document.createElement('label');
                                 label.htmlFor = `member-${member.id}`;
                                 label.textContent = member.name;
-                                label.style.cursor = 'pointer'; // Melhora usabilidade
+                                // label.style.cursor = 'pointer'; // Removido
 
                                 listItem.appendChild(checkbox);
                                 listItem.appendChild(label);
@@ -127,32 +146,29 @@
                             });
                             membersListDiv.appendChild(list);
                         } else {
-                            membersListDiv.innerHTML = '<p style="color: #777;">Este projeto não possui membros associados.</p>';
+                            membersListDiv.innerHTML = '<p class="checkbox-list-placeholder">Este projeto não possui membros associados.</p>';
                         }
                     })
                     .catch(error => {
                         console.error('Erro ao buscar membros:', error);
-                        membersListDiv.innerHTML = `<p style="color: red;">Erro ao carregar membros. (${error.message}). Verifique o console.</p>`;
+                        membersListDiv.innerHTML = `<p class="form-error">Erro ao carregar membros. (${error.message}). Verifique o console.</p>`;
                     });
             }
 
-            // Adiciona o listener para o evento 'change' no select de projetos
             if (projectSelect) {
                  projectSelect.addEventListener('change', function() {
-                    fetchAndRenderMembers(this.value); // 'this.value' pega o valor do <option> selecionado (que deve ser o ID do projeto)
+                    fetchAndRenderMembers(this.value);
                  });
 
-                // Dispara o carregamento inicial se um projeto já estiver selecionado ao carregar a página
                 if (projectSelect.value) {
                     console.log("Projeto pré-selecionado:", projectSelect.value, "Carregando membros...");
                     fetchAndRenderMembers(projectSelect.value);
                 } else {
-                     membersListDiv.innerHTML = '<p style="color: #777;">Selecione um projeto para carregar os membros.</p>';
+                     membersListDiv.innerHTML = placeholderText;
                 }
             } else {
                 console.error("Elemento #project-select não encontrado!");
             }
-
         });
     </script>
 {% endblock %}

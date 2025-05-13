@@ -1,8 +1,8 @@
-"""Initial database models (target instance folder)
+"""Configurando migrações com novo venv
 
-Revision ID: b0c8fbb83aba
+Revision ID: 972209487695
 Revises: 
-Create Date: 2025-04-24 18:46:48.462225
+Create Date: 2025-05-02 17:32:56.407569
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'b0c8fbb83aba'
+revision = '972209487695'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -21,9 +21,11 @@ def upgrade():
     op.create_table('member',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=100), nullable=False),
+    sa.Column('is_active', sa.Boolean(), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     with op.batch_alter_table('member', schema=None) as batch_op:
+        batch_op.create_index(batch_op.f('ix_member_is_active'), ['is_active'], unique=False)
         batch_op.create_index(batch_op.f('ix_member_name'), ['name'], unique=True)
 
     op.create_table('project',
@@ -93,6 +95,7 @@ def downgrade():
     op.drop_table('project')
     with op.batch_alter_table('member', schema=None) as batch_op:
         batch_op.drop_index(batch_op.f('ix_member_name'))
+        batch_op.drop_index(batch_op.f('ix_member_is_active'))
 
     op.drop_table('member')
     # ### end Alembic commands ###

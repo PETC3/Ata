@@ -3,86 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ title }} - Gestor de Atas</title>
-    <!-- Link para o CSS geral ou um específico para login -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <style>
-        /* Estilos básicos para centralizar o formulário (exemplo) */
-        body {
-            font-family: sans-serif;
-            background-color: #ecf0f1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-        }
-        .login-container {
-            background-color: #ffffff;
-            padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 400px; /* Largura máxima do container */
-            text-align: center;
-        }
-        .login-container h1 {
-            color: #2c3e50;
-            margin-bottom: 30px;
-        }
-        .form-group {
-            margin-bottom: 20px;
-            text-align: left; /* Alinha labels e inputs à esquerda */
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            color: #34495e;
-            font-weight: bold;
-        }
-        .form-group input[type="text"],
-        .form-group input[type="password"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #bdc3c7;
-            border-radius: 4px;
-            box-sizing: border-box; /* Garante que padding não aumente a largura total */
-        }
-        .form-group .error {
-            color: #c0392b;
-            font-size: 0.9em;
-            margin-top: 5px;
-            list-style: none; /* Remove bullet points da lista de erros */
-            padding-left: 0;
-        }
-        .submit-button {
-            background-color: #3498db;
-            color: white;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 1em;
-            width: 100%; /* Botão ocupa largura total */
-            transition: background-color 0.2s;
-        }
-        .submit-button:hover {
-            background-color: #2980b9;
-        }
-         /* Estilos para mensagens flash (copiados de base.html para consistência) */
-        .flash-messages { list-style: none; padding: 0; margin-bottom: 20px; }
-        .flash-messages li { padding: 15px; margin-bottom: 10px; border-radius: 4px; text-align: left;}
-        .flash-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .flash-danger { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .flash-info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
-        .flash-warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
-    </style>
+    <title>{{ title if title else "Login" }} - Gestor de Atas</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+    {# Ionicons se precisar de ícones nos inputs ou em outros lugares no login #}
+    {# <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script> #}
+    {# <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script> #}
 </head>
-<body>
-    <div class="login-container">
-        <h1>Acessar Gestor de Atas</h1>
+<script src="https://cdn.jsdelivr.net/npm/tsparticles@2/tsparticles.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', async (event) => {
+        await tsParticles.load("particles-background", { // "particles-background" é o ID do div no seu HTML
+            fpsLimit: 60,
+            particles: {
+                number: { value: 60, density: { enable: true, value_area: 800 }},
+                color: { value: ["#FFFFFF", "#a8eb12", "#8ec5fc", "#f0f8ff"] }, // Cores variadas
+                shape: { type: "circle" },
+                opacity: {
+                    value: {min: 0.2, max: 0.7},
+                    animation: { enable: true, speed: 0.8, minimumValue: 0.1, sync: false }
+                },
+                size: {
+                    value: {min: 1, max: 3.5},
+                    animation: { enable: true, speed: 3, minimumValue: 0.5, sync: false }
+                },
+                move: {
+                    enable: true,
+                    speed: 1.2,
+                    direction: "none",
+                    random: true,
+                    straight: false,
+                    outModes: { default: "out" },
+                },
+                links: {
+                    enable: true,
+                    distance: 130,
+                    color: "rgba(255,255,255,0.15)", // Linhas bem sutis
+                    opacity: 0.15,
+                    width: 1
+                }
+            },
+            interactivity: {
+                detectsOn: "canvas", // ou "window"
+                events: {
+                    onHover: { enable: true, mode: "grab" },
+                    onClick: { enable: true, mode: "repulse" }, // Efeito de repelir ao clicar
+                },
+                modes: {
+                    grab: { distance: 150, links: { opacity: 0.3 } },
+                    repulse: { distance: 100, duration: 0.4 },
+                    // push: { quantity: 3 }, // Removido push, repulse é mais interessante
+                },
+            },
+            detectRetina: true,
+            background: { // Removido para que o gradiente do body apareça
+                // color: "transparent", // Garante que não sobreponha
+            }
+        });
+    });
+</script>
+<body class="login-page-body"> {# A classe no body é importante para o CSS #}
 
-        <!-- Exibição de Mensagens Flash (para erros de login, etc.) -->
+    <div id="login-slideshow-js" class="login-background-slideshow">
+        <!-- Imagens serão adicionadas aqui pelo JavaScript -->
+    </div>
+
+    <div class="login-container">
+        <h1>Acesso PET C3</h1>
+        {% if subtitle %} {# Opcional: Adicionar um subtítulo se passado pela view #}
+        <p class="subtitle">{{ subtitle }}</p>
+        {% endif %}
+
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 <ul class="flash-messages">
@@ -93,37 +83,117 @@
             {% endif %}
         {% endwith %}
 
-        <!-- Formulário de Login -->
-        <form method="POST" action="{{ url_for('login') }}" novalidate>
-            <!-- Token CSRF (essencial para segurança com Flask-WTF) -->
+        <form method="POST" action="{{ url_for('login') }}" novalidate class="login-form">
             {{ form.hidden_tag() }}
 
             <div class="form-group">
-                {{ form.username.label }}<br>
-                {{ form.username(size=32, class="form-control") }}<br>
+                {{ form.username.label(class="form-label") }}
+                {{ form.username(class="form-control", placeholder="Seu usuário") }}
                 {% if form.username.errors %}
-                <ul class="error">
-                    {% for error in form.username.errors %}<li>{{ error }}</li>{% endfor %}
-                </ul>
+                <div class="form-error">
+                    {% for error in form.username.errors %}<span>{{ error }}</span>{% endfor %}
+                </div>
                 {% endif %}
             </div>
 
             <div class="form-group">
-                {{ form.password.label }}<br>
-                {{ form.password(size=32, class="form-control") }}<br>
+                {{ form.password.label(class="form-label") }}
+                {{ form.password(class="form-control", placeholder="Sua senha") }}
                 {% if form.password.errors %}
-                <ul class="error">
-                    {% for error in form.password.errors %}<li>{{ error }}</li>{% endfor %}
-                </ul>
+                <div class="form-error">
+                    {% for error in form.password.errors %}<span>{{ error }}</span>{% endfor %}
+                </div>
                 {% endif %}
             </div>
 
             <div class="form-group">
-                {{ form.submit(class="submit-button") }}
+                {{ form.submit(class="btn-submit") }}
             </div>
         </form>
-        <!-- Link opcional para voltar ao site estático ou para recuperação de senha -->
-        <!-- <p><a href="/">Voltar ao site principal</a></p> -->
     </div>
+
+    {# Script do Slideshow #}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const slideshowContainer = document.getElementById('login-slideshow-js');
+            const totalImages = 13; // Número total de imagens
+            const imageBaseName = ''; // Não precisamos de um nome base se for só o número
+            const imageExtension = '.png';
+            const imagePath = "{{ url_for('static', filename='img/') }}"; // Caminho base da pasta img
+
+            let images = [];
+            for (let i = 1; i <= totalImages; i++) {
+                images.push(imagePath + i + imageExtension);
+            }
+
+            let currentImageIndex = 0;
+
+            if (!slideshowContainer || images.length === 0) {
+                console.error("Slideshow container não encontrado ou nenhuma imagem definida.");
+                return;
+            }
+
+            function preloadImage(url, callback) {
+                const img = new Image();
+                img.onload = callback;
+                img.onerror = function() {
+                    console.warn(`Erro ao carregar imagem: ${url}`);
+                    callback(); // Chama o callback mesmo em erro para não travar o slideshow
+                };
+                img.src = url;
+            }
+
+            function changeSlide() {
+                if (slideshowContainer.children.length === 0) return; // Não faz nada se os slides não foram criados
+
+                // Remove a classe 'active' do slide atual (se houver)
+                const currentActive = slideshowContainer.querySelector('.slide.active');
+                if (currentActive) {
+                    currentActive.classList.remove('active');
+                }
+
+                // Prepara o próximo slide
+                const nextSlide = slideshowContainer.children[currentImageIndex];
+                
+                // Garante que apenas o slide ativo tenha z-index maior
+                // Todos os outros slides devem ter z-index menor para a transição de opacidade funcionar corretamente.
+                for (let i = 0; i < slideshowContainer.children.length; i++) {
+                    slideshowContainer.children[i].style.zIndex = 0;
+                }
+                if(nextSlide){ // Adicionado para verificar se nextSlide existe
+                    nextSlide.style.zIndex = 1; // Próximo slide na frente
+                    nextSlide.classList.add('active'); // Adiciona classe para fade in
+                }
+
+
+                currentImageIndex = (currentImageIndex + 1) % images.length;
+            }
+
+            // Criar os elementos de slide e pré-carregar imagens
+            let imagesToLoad = images.length;
+            
+            images.forEach((imageUrl, index) => {
+                const slideDiv = document.createElement('div');
+                slideDiv.classList.add('slide');
+                slideDiv.style.backgroundImage = `url('${imageUrl}')`;
+                slideshowContainer.appendChild(slideDiv);
+
+                preloadImage(imageUrl, () => {
+                    imagesToLoad--;
+                    if (imagesToLoad === 0) { // Todas as imagens (ou tentativas) foram processadas
+                        // Inicia o slideshow randomicamente para variar a primeira imagem
+                        currentImageIndex = Math.floor(Math.random() * images.length);
+                        changeSlide(); // Mostra o primeiro slide
+                        setInterval(changeSlide, 6000); // Muda a cada 6 segundos (ajuste conforme desejar)
+                    }
+                });
+            });
+            // Caso não haja imagens, limpa o container para não mostrar nada quebrado
+            if (images.length === 0) {
+                 slideshowContainer.innerHTML = '';
+            }
+        });
+    </script>
+
 </body>
 </html>
