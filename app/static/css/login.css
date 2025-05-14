@@ -3,7 +3,7 @@
 /* =============== Variáveis Globais =============== */
 :root {
     /* Cor de acento original (verde petróleo) - para referências ou outros elementos */
-    --original-primary-accent: #008080;
+    --original-primary-accent: #004d7a;
     --original-primary-accent-dark: color-mix(in srgb, var(--original-primary-accent) 85%, black);
 
     /* Novas cores para o botão de login */
@@ -27,8 +27,8 @@
 
     /* Cores de erro */
     --error-color: #e74c3c;
-    --error-bg-glass: rgba(254, 226, 226, 0.85); /* Fundo de erro para o vidro */
-    --error-border-glass: rgba(252, 165, 165, 0.8);
+    --error-bg-glass: rgba(252, 165, 165, 0.8); /* Fundo de erro para o vidro */
+    --error-border-glass: rgba(254, 226, 226, 0.85);
 
     /* Mapeando variáveis para nomes consistentes (alguns podem ser redundantes agora) */
     --main-bg: var(--page-bg-gradient); /* Body usará o gradiente */
@@ -67,17 +67,7 @@ body.login-page-body {
     position: relative; /* Para z-index do overlay e partículas */
 }
 
-/* Overlay opcional (se o gradiente + partículas + vidro não derem contraste suficiente) */
-/*
-body.login-page-body::before {
-    content: '';
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background-color: rgba(0, 0, 0, 0.15);
-    z-index: 0;
-}
-*/
+
 
 /* Container para as partículas (se estiver usando a biblioteca JS) */
 #particles-background {
@@ -88,7 +78,35 @@ body.login-page-body::before {
     left: 0;
     z-index: -1; /* Atrás de tudo, exceto talvez um fundo de body ainda mais básico */
 }
+.titulo-com-logo {
+    display: flex;
+    align-items: flex-end; /* Se você quiser que eles fiquem alinhados pela base */
+    justify-content: center;
+    position: relative; /* Container com posição relativa para que os filhos se posicionem em relação a ele */
+    color: var(--white);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    margin: 0;
+    font-size: 2em;
+    font-weight: 500;
+}
 
+.logo-pet {
+    height: 2em;
+    width: auto;
+    position: absolute; /* Agora podemos mover a logo onde quisermos */
+    top: -20%; /* Ajuste vertical da logo */
+    left: 15%; /* Ajuste horizontal da logo */
+    /* Se quiser "sobrepor" a logo ao texto, você pode usar valores negativos aqui */
+    transform: translateY(-10px); /* Exemplo de sobreposição, movendo a logo para cima */
+}
+
+.titulo-com-logo h1 {
+    position: absolute; /* Posiciona o título diretamente */
+    top: 30px; /* Ajuste o valor conforme necessário */
+    left: 0; /* Ajuste para centralizar ou posicionar à esquerda */
+    font-size: 1.5em; /* Ajuste o tamanho do título se necessário */
+    margin: 0; /* Remove margens extras */
+}
 .login-container {
     background: var(--card-bg);
     backdrop-filter: blur(12px);
@@ -235,6 +253,7 @@ body.login-page-body::before {
     transform: translateY(0px);
     box-shadow: 0 2px 4px rgba(0,0,0,0.08);
 }
+
 
 
 .login-links {

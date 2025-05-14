@@ -4,19 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title if title else "Login" }} - Gestor de Atas</title>
+
+    <!-- Estilo específico para a página de login -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
-    {# Ionicons se precisar de ícones nos inputs ou em outros lugares no login #}
-    {# <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script> #}
-    {# <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script> #}
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='uploads/icone.png') }}">
+
 </head>
+
+<!-- Biblioteca de partículas para animação de fundo -->
 <script src="https://cdn.jsdelivr.net/npm/tsparticles@2/tsparticles.bundle.min.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', async (event) => {
-        await tsParticles.load("particles-background", { // "particles-background" é o ID do div no seu HTML
+    // Inicializa a animação de partículas após o carregamento da página
+    document.addEventListener('DOMContentLoaded', async () => {
+        await tsParticles.load("particles-background", {
             fpsLimit: 60,
             particles: {
                 number: { value: 60, density: { enable: true, value_area: 800 }},
-                color: { value: ["#FFFFFF", "#a8eb12", "#8ec5fc", "#f0f8ff"] }, // Cores variadas
+                color: { value: ["#FFFFFF", "#129feb", "#8ec5fc", "#f0f8ff"] },
                 shape: { type: "circle" },
                 opacity: {
                     value: {min: 0.2, max: 0.7},
@@ -29,50 +33,45 @@
                 move: {
                     enable: true,
                     speed: 1.2,
-                    direction: "none",
                     random: true,
-                    straight: false,
                     outModes: { default: "out" },
                 },
                 links: {
                     enable: true,
                     distance: 130,
-                    color: "rgba(255,255,255,0.15)", // Linhas bem sutis
+                    color: "rgba(255,255,255,0.15)",
                     opacity: 0.15,
                     width: 1
                 }
             },
             interactivity: {
-                detectsOn: "canvas", // ou "window"
+                detectsOn: "canvas",
                 events: {
                     onHover: { enable: true, mode: "grab" },
-                    onClick: { enable: true, mode: "repulse" }, // Efeito de repelir ao clicar
+                    onClick: { enable: true, mode: "repulse" },
                 },
                 modes: {
                     grab: { distance: 150, links: { opacity: 0.3 } },
                     repulse: { distance: 100, duration: 0.4 },
-                    // push: { quantity: 3 }, // Removido push, repulse é mais interessante
                 },
             },
-            detectRetina: true,
-            background: { // Removido para que o gradiente do body apareça
-                // color: "transparent", // Garante que não sobreponha
-            }
+            detectRetina: true
         });
-    });
+    }); 
 </script>
-<body class="login-page-body"> {# A classe no body é importante para o CSS #}
 
-    <div id="login-slideshow-js" class="login-background-slideshow">
-        <!-- Imagens serão adicionadas aqui pelo JavaScript -->
-    </div>
-
+<body class="login-page-body">
+    <!-- Container principal do login -->
     <div class="login-container">
-        <h1>Acesso PET C3</h1>
-        {% if subtitle %} {# Opcional: Adicionar um subtítulo se passado pela view #}
+        <h1 class="titulo-com-logo">
+    <img src="{{ url_for('static', filename='uploads/logo_branca.png') }}" alt="Logo PET" class="logo-pet">
+    PET C3
+</h1>
+        {% if subtitle %}
         <p class="subtitle">{{ subtitle }}</p>
         {% endif %}
 
+        <!-- Exibe mensagens de erro, aviso ou sucesso -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 <ul class="flash-messages">
@@ -83,6 +82,7 @@
             {% endif %}
         {% endwith %}
 
+        <!-- Formulário de login -->
         <form method="POST" action="{{ url_for('login') }}" novalidate class="login-form">
             {{ form.hidden_tag() }}
 
@@ -91,7 +91,9 @@
                 {{ form.username(class="form-control", placeholder="Seu usuário") }}
                 {% if form.username.errors %}
                 <div class="form-error">
-                    {% for error in form.username.errors %}<span>{{ error }}</span>{% endfor %}
+                    {% for error in form.username.errors %}
+                        <span>{{ error }}</span>
+                    {% endfor %}
                 </div>
                 {% endif %}
             </div>
@@ -101,7 +103,9 @@
                 {{ form.password(class="form-control", placeholder="Sua senha") }}
                 {% if form.password.errors %}
                 <div class="form-error">
-                    {% for error in form.password.errors %}<span>{{ error }}</span>{% endfor %}
+                    {% for error in form.password.errors %}
+                        <span>{{ error }}</span>
+                    {% endfor %}
                 </div>
                 {% endif %}
             </div>
@@ -112,88 +116,6 @@
         </form>
     </div>
 
-    {# Script do Slideshow #}
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const slideshowContainer = document.getElementById('login-slideshow-js');
-            const totalImages = 13; // Número total de imagens
-            const imageBaseName = ''; // Não precisamos de um nome base se for só o número
-            const imageExtension = '.png';
-            const imagePath = "{{ url_for('static', filename='img/') }}"; // Caminho base da pasta img
-
-            let images = [];
-            for (let i = 1; i <= totalImages; i++) {
-                images.push(imagePath + i + imageExtension);
-            }
-
-            let currentImageIndex = 0;
-
-            if (!slideshowContainer || images.length === 0) {
-                console.error("Slideshow container não encontrado ou nenhuma imagem definida.");
-                return;
-            }
-
-            function preloadImage(url, callback) {
-                const img = new Image();
-                img.onload = callback;
-                img.onerror = function() {
-                    console.warn(`Erro ao carregar imagem: ${url}`);
-                    callback(); // Chama o callback mesmo em erro para não travar o slideshow
-                };
-                img.src = url;
-            }
-
-            function changeSlide() {
-                if (slideshowContainer.children.length === 0) return; // Não faz nada se os slides não foram criados
-
-                // Remove a classe 'active' do slide atual (se houver)
-                const currentActive = slideshowContainer.querySelector('.slide.active');
-                if (currentActive) {
-                    currentActive.classList.remove('active');
-                }
-
-                // Prepara o próximo slide
-                const nextSlide = slideshowContainer.children[currentImageIndex];
-                
-                // Garante que apenas o slide ativo tenha z-index maior
-                // Todos os outros slides devem ter z-index menor para a transição de opacidade funcionar corretamente.
-                for (let i = 0; i < slideshowContainer.children.length; i++) {
-                    slideshowContainer.children[i].style.zIndex = 0;
-                }
-                if(nextSlide){ // Adicionado para verificar se nextSlide existe
-                    nextSlide.style.zIndex = 1; // Próximo slide na frente
-                    nextSlide.classList.add('active'); // Adiciona classe para fade in
-                }
-
-
-                currentImageIndex = (currentImageIndex + 1) % images.length;
-            }
-
-            // Criar os elementos de slide e pré-carregar imagens
-            let imagesToLoad = images.length;
-            
-            images.forEach((imageUrl, index) => {
-                const slideDiv = document.createElement('div');
-                slideDiv.classList.add('slide');
-                slideDiv.style.backgroundImage = `url('${imageUrl}')`;
-                slideshowContainer.appendChild(slideDiv);
-
-                preloadImage(imageUrl, () => {
-                    imagesToLoad--;
-                    if (imagesToLoad === 0) { // Todas as imagens (ou tentativas) foram processadas
-                        // Inicia o slideshow randomicamente para variar a primeira imagem
-                        currentImageIndex = Math.floor(Math.random() * images.length);
-                        changeSlide(); // Mostra o primeiro slide
-                        setInterval(changeSlide, 6000); // Muda a cada 6 segundos (ajuste conforme desejar)
-                    }
-                });
-            });
-            // Caso não haja imagens, limpa o container para não mostrar nada quebrado
-            if (images.length === 0) {
-                 slideshowContainer.innerHTML = '';
-            }
-        });
-    </script>
 
 </body>
 </html>
