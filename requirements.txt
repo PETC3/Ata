@@ -30,3 +30,5 @@ python-dotenv
 # (Opcional) Para melhorias no servidor de desenvolvimento ou produção
 # gunicorn # Servidor WSGI recomendado para produção
 # waitress # Outra opção de servidor WSGI puro Python
+
+num2words

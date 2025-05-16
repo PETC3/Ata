@@ -6,6 +6,18 @@ import locale
 from datetime import datetime
 from flask import current_app
 
+# Tenta importar num2words
+try:
+    from num2words import num2words
+    NUM2WORDS_DISPONIVEL = True
+except ImportError:
+    NUM2WORDS_DISPONIVEL = False
+    if current_app:
+        current_app.logger.warning("Biblioteca 'num2words' não encontrada. Anos serão exibidos em numeral.")
+    else:
+        print("Aviso: Biblioteca 'num2words' não encontrada. Anos serão exibidos em numeral.")
+
+
 from reportlab.platypus import (SimpleDocTemplate, Paragraph, Spacer, Image,
                                 Table, TableStyle, ListFlowable, ListItem, PageBreak)
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -28,109 +40,89 @@ except locale.Error:
         try:
             locale.setlocale(locale.LC_TIME, 'Portuguese')
         except locale.Error:
-            if current_app:
-                current_app.logger.warning("Locale 'pt_BR' ou 'Portuguese' não configurado.")
-            else:
-                print("Aviso: Locale 'pt_BR' ou 'Portuguese' não configurado.")
+            log_msg = "Locale 'pt_BR' ou 'Portuguese' não configurado."
+            if current_app: current_app.logger.warning(log_msg)
+            else: print(f"Aviso: {log_msg}")
 
-# Função para desenhar APENAS o número da página (para páginas subsequentes)
+# Mantido para os dias do mês, pois oferece formatação específica (ex: "quatorze")
+DIAS_EXTENSO = {
+    1: "primeiro", 2: "dois", 3: "três", 4: "quatro", 5: "cinco", 6: "seis", 7: "sete",
+    8: "oito", 9: "nove", 10: "dez", 11: "onze", 12: "doze", 13: "treze", 14: "quatorze",
+    15: "quinze", 16: "dezesseis", 17: "dezessete", 18: "dezoito", 19: "dezenove", 20: "vinte",
+    21: "vinte e um", 22: "vinte e dois", 23: "vinte e três", 24: "vinte e quatro",
+    25: "vinte e cinco", 26: "vinte e seis", 27: "vinte e sete", 28: "vinte e oito",
+    29: "vinte e nove", 30: "trinta", 31: "trinta e um"
+}
+
+def get_ano_por_extenso(ano_int):
+    if NUM2WORDS_DISPONIVEL:
+        try:
+            # 'to="year"' pode ser útil, mas o padrão geralmente funciona bem para pt_BR
+            return num2words(ano_int, lang='pt_BR', to='year')
+        except Exception as e:
+            log_msg = f"Erro ao converter ano {ano_int} com num2words: {e}. Usando numeral."
+            if current_app: current_app.logger.error(log_msg)
+            else: print(log_msg)
+            return str(ano_int)
+    return str(ano_int)
+
 def draw_page_number_only(canvas, doc):
     canvas.saveState()
     page_num_text = f"{canvas.getPageNumber()}"
     canvas.setFont("Times-Roman", 10)
     x_position = doc.pagesize[0] - 2*cm
-    y_position = doc.pagesize[1] - 2*cm - (0.3*cm) # Posição ABNT canto sup dir
+    y_position = doc.pagesize[1] - 2*cm - (0.3*cm)
     canvas.drawRightString(x_position, y_position, page_num_text)
     canvas.restoreState()
 
-# Função para desenhar o cabeçalho completo (logos, títulos) E o número da página (SÓ PARA A PRIMEIRA PÁGINA)
-def draw_full_header_and_page_number(canvas, doc, ata_object):
+def draw_first_page_header_custom(canvas, doc, ata_object):
     canvas.saveState()
-
-    # --- Configurações das Logos ---
-    furg_logo_filename = "FURG.png"
-    c3_logo_filename = "C3.png"
-    furg_width_pt = 77 * 0.75
-    furg_height_pt = 77 * 0.75
-    c3_width_pt = 80 * 0.75 # Você tinha 77 aqui antes, mas no HTML era 80, mantendo 80
-    c3_height_pt = 87 * 0.75 # Você tinha 84 aqui antes, mas no HTML era 87, mantendo 87
-
-    margin_lateral_logo = 1 * cm
-    margin_topo_logo = 1 * cm
     page_width, page_height = doc.pagesize
 
-    # --- Desenhar Logo FURG (Esquerda) ---
-    furg_logo_path = os.path.join(current_app.config.get('UPLOAD_FOLDER', os.path.join(current_app.static_folder, 'uploads')), furg_logo_filename)
-    if os.path.exists(furg_logo_path):
+    logo_filename = "FURG.png" # !!! AJUSTE: Nome do arquivo da sua logo central !!!
+    logo_path = os.path.join(current_app.config.get('UPLOAD_FOLDER', os.path.join(current_app.static_folder, 'uploads')), logo_filename)
+    logo_width_pt = 50
+    logo_height_pt = 50
+    y_logo_start = page_height - doc.topMargin + (doc.topMargin * 0.65)
+    logo_x = (page_width - logo_width_pt) / 2
+    logo_y = y_logo_start - logo_height_pt
+
+    if os.path.exists(logo_path):
         try:
-            furg_x = margin_lateral_logo
-            furg_y = page_height - margin_topo_logo - furg_height_pt
-            canvas.drawImage(furg_logo_path, furg_x, furg_y, width=furg_width_pt, height=furg_height_pt, mask='auto')
+            canvas.drawImage(logo_path, logo_x, logo_y, width=logo_width_pt, height=logo_height_pt, mask='auto')
         except Exception as e:
-            current_app.logger.error(f"Erro ao desenhar logo FURG no PDF: {e}")
+            current_app.logger.error(f"Erro ao desenhar logo central no PDF: {e}")
+    else:
+        current_app.logger.warning(f"Arquivo de logo central não encontrado: {logo_path}")
 
-    # --- Desenhar Logo C3 (Direita) ---
-    c3_logo_path = os.path.join(current_app.config.get('UPLOAD_FOLDER', os.path.join(current_app.static_folder, 'uploads')), c3_logo_filename)
-    if os.path.exists(c3_logo_path):
-        try:
-            c3_x = page_width - margin_lateral_logo - c3_width_pt
-            c3_y = page_height - margin_topo_logo - c3_height_pt
-            canvas.drawImage(c3_logo_path, c3_x, c3_y, width=c3_width_pt, height=c3_height_pt, mask='auto')
-        except Exception as e:
-            current_app.logger.error(f"Erro ao desenhar logo C3 no PDF: {e}")
+    font_name_header = "Helvetica"
+    font_name_header_bold = "Helvetica-Bold"
+    font_size_instituicao = 10
+    font_size_ata_titulo = 10
+    line_spacing_header_pt = 12
+    y_current = logo_y - 0.5*cm
 
-    # --- Desenhar Textos Centrais (Instituição, Título da Ata) ---
-    font_name_header = "Times-Roman"
-    font_name_header_bold = "Times-Bold"
-    font_size_header_instituicao = 12
-    font_size_header_ata = 12
-    line_spacing_header_pt = 4
+    textos_cabecalho = [
+        ("UNIVERSIDADE FEDERAL DO RIO GRANDE – FURG", font_name_header, font_size_instituicao),
+        ("CENTRO DE CIÊNCIAS COMPUTACIONAIS", font_name_header, font_size_instituicao),
+        ("PET – Ciências Computacionais – C3", font_name_header, font_size_instituicao),
+    ]
+    for text, font, size in textos_cabecalho:
+        canvas.setFont(font, size)
+        canvas.drawCentredString(page_width / 2, y_current, text)
+        y_current -= line_spacing_header_pt
 
-    y_current = page_height - margin_topo_logo - font_size_header_instituicao - (0.3 * cm)
-    text_area_x_start = margin_lateral_logo + furg_width_pt + 0.5*cm
-    text_area_x_end = page_width - margin_lateral_logo - c3_width_pt - 0.5*cm
-    text_area_width = text_area_x_end - text_area_x_start
-    text_area_center_x = text_area_x_start + text_area_width / 2
-
-    if text_area_width > 0:
-        canvas.setFont(font_name_header, font_size_header_instituicao)
-        text_furg = "UNIVERSIDADE FEDERAL DO RIO GRANDE - FURG"
-        canvas.drawCentredString(text_area_center_x, y_current, text_furg)
-        y_current -= (font_size_header_instituicao + line_spacing_header_pt)
-
-        text_pet = "PROJETO DE EDUCAÇÃO TUTORIAL - PET"
-        canvas.drawCentredString(text_area_center_x, y_current, text_pet)
-        y_current -= (font_size_header_instituicao + line_spacing_header_pt)
-
-        text_pet_cc = "PET CIÊNCIAS COMPUTACIONAIS"
-        canvas.drawCentredString(text_area_center_x, y_current, text_pet_cc)
-        y_current -= (font_size_header_instituicao + line_spacing_header_pt + 6)
-
-        canvas.setFont(font_name_header_bold, font_size_header_ata)
-        text_ata_titulo = f"ATA DE REUNIÃO {ata_object.project.name.upper()}"
-        canvas.drawCentredString(text_area_center_x, y_current, text_ata_titulo)
-
-    # --- Número da Página (também desenhado pela função separada, mas aqui para a primeira página) ---
-    page_num_text = f"{canvas.getPageNumber()}" # ou "1" se for sempre a primeira
-    canvas.setFont("Times-Roman", 10)
-    num_x_position = doc.pagesize[0] - 2*cm
-    num_y_position = doc.pagesize[1] - 2*cm - (0.3*cm)
-    canvas.drawRightString(num_x_position, num_y_position, page_num_text)
-
+    y_current -= (line_spacing_header_pt * 0.2)
+    canvas.setFont(font_name_header_bold, font_size_ata_titulo)
+    text_ata_titulo = f"ATA {ata_object.meeting_datetime.strftime('%d/%m/%Y')}"
+    canvas.drawCentredString(page_width / 2, y_current, text_ata_titulo)
     canvas.restoreState()
 
 def generate_ata_pdf(ata: 'Ata') -> bytes:
     buffer = io.BytesIO()
-    pdf_document_title = f"Ata Reunião PET Comp - {ata.project.name} - {ata.meeting_datetime.strftime('%Y-%m-%d')}"
+    pdf_document_title = f"Ata Reunião PET Ciências Computacionais - {ata.project.name} - {ata.meeting_datetime.strftime('%Y-%m-%d')}"
     
-    # A margem superior do SimpleDocTemplate precisa ser grande o suficiente para o cabeçalho fixo DA PRIMEIRA PÁGINA.
-    # Para as páginas subsequentes, o conteúdo começará mais acima, pois só haverá o número da página.
-    # No entanto, SimpleDocTemplate usa a mesma topMargin para todas as páginas.
-    # Uma solução é manter a topMargin grande e adicionar um Spacer no início da 'story' nas páginas
-    # subsequentes se o cabeçalho for menor. Ou, para este caso, aceitar que as páginas subsequentes
-    # terão um espaço em branco maior no topo se o cabeçalho da primeira página for muito alto.
-    # Vamos manter a margem calculada para o cabeçalho completo.
-    new_top_margin = 5.5 * cm
+    new_top_margin = 6.5 * cm # AJUSTE ESTE VALOR CONFORME NECESSÁRIO
 
     doc = SimpleDocTemplate(
         buffer, pagesize=A4, leftMargin=3*cm, rightMargin=2*cm,
@@ -142,85 +134,85 @@ def generate_ata_pdf(ata: 'Ata') -> bytes:
     bold_font_name = "Times-Bold"
 
     styles.add(ParagraphStyle(name='ABNT_Corpo', parent=styles['Normal'], fontName=base_font_name, fontSize=12, leading=18, alignment=TA_JUSTIFY, firstLineIndent=1.25*cm, spaceBefore=0, spaceAfter=6 ))
-    styles.add(ParagraphStyle(name='ABNT_InfoBloco', parent=styles['ABNT_Corpo'], alignment=TA_LEFT, spaceBefore=0.2*cm, spaceAfter=0.2*cm, firstLineIndent=0))
-    styles.add(ParagraphStyle(name='ABNT_SecaoTitulo', parent=styles['ABNT_Corpo'], fontSize=12, fontName=bold_font_name, alignment=TA_LEFT, spaceBefore=0.8*cm, spaceAfter=0.4*cm, firstLineIndent=0))
+    # ABNT_ListaLabel e ABNT_ListItem não serão mais usados para ausentes se for no mesmo parágrafo.
+    # Mas podem ser úteis para outras listas, então vamos mantê-los definidos por enquanto.
     styles.add(ParagraphStyle(name='ABNT_ListaLabel', parent=styles['ABNT_Corpo'], fontName=bold_font_name, alignment=TA_LEFT, spaceBefore=0.3*cm, spaceAfter=0.1*cm, firstLineIndent=0))
-    styles.add(ParagraphStyle(name='ABNT_ListItem', parent=styles['ABNT_Corpo'], leftIndent=0, firstLineIndent=0, alignment=TA_JUSTIFY, spaceBefore=0, spaceAfter=0)) # MUDADO PARA TA_JUSTIFY
-    
-    # MUDANÇA: Novo estilo para o local/data final centralizado
-    styles.add(ParagraphStyle(
-        name='ABNT_LocalDataFinal', 
-        parent=styles['ABNT_Corpo'], 
-        alignment=TA_CENTER, # Centralizado
-        firstLineIndent=0,   # Sem recuo
-        spaceBefore=1*cm     # Espaço antes dele
-    ))
+    styles.add(ParagraphStyle(name='ABNT_ListItem', parent=styles['ABNT_Corpo'], leftIndent=1.25*cm, firstLineIndent=0, alignment=TA_JUSTIFY, spaceBefore=0, spaceAfter=0))
+    styles.add(ParagraphStyle(name='LinhaAssinatura', parent=styles['Normal'], alignment=TA_CENTER, fontName='Courier', fontSize=12, spaceBefore=1*cm, spaceAfter=0.1*cm))
+    styles.add(ParagraphStyle(name='NomeSignatario', parent=styles['Normal'], alignment=TA_CENTER, fontName=base_font_name, fontSize=12, spaceBefore=0.1*cm))
 
     story = []
 
-    # --- Informações da Reunião ---
+    # --- Construção do parágrafo introdutório (data, presentes e ausentes) ---
     try:
-        meeting_time_str = ata.meeting_datetime.strftime('%d de %B de %Y, às %H:%M')
-    except ValueError:
-        meeting_time_str = ata.meeting_datetime.strftime('%d/%m/%Y às %H:%M')
-        if current_app: current_app.logger.warning("Usando formato de data fallback.")
-    story.append(Paragraph(f"<b>Data e Horário:</b> {meeting_time_str}", styles['ABNT_InfoBloco']))
-    location_str = f"<b>Local/Modalidade:</b> {ata.location_type.value}"
-    if ata.location_details:
-        location_str += f" ({ata.location_details})"
-    story.append(Paragraph(location_str, styles['ABNT_InfoBloco']))
-    story.append(Spacer(1, 0.5*cm))
+        dia_int = ata.meeting_datetime.day
+        dia_str_extenso = DIAS_EXTENSO.get(dia_int, str(dia_int))
+        mes_str_extenso = ata.meeting_datetime.strftime('%B')
+        ano_str_extenso = get_ano_por_extenso(ata.meeting_datetime.year)
+        data_completa_extenso = f"{dia_str_extenso} dias do mês de {mes_str_extenso} de {ano_str_extenso}"
+    except Exception as e:
+        current_app.logger.error(f"Erro ao formatar data por extenso: {e}")
+        data_completa_extenso = ata.meeting_datetime.strftime('%d de %B de %Y')
 
-    # --- Lista de Participantes ---
-    story.append(Paragraph("PARTICIPANTES", styles['ABNT_SecaoTitulo']))
-    present_members = sorted([m.name for m in ata.present_members])
-    absent_members = sorted([m.name for m in ata.absent_members])
-    if present_members:
-        story.append(Paragraph("Presentes:", styles['ABNT_ListaLabel']))
-        present_list = ListFlowable( [ListItem(Paragraph(name, styles['ABNT_ListItem'])) for name in present_members], bulletType='bullet', leftIndent=1.25*cm )
-        story.append(present_list)
+    # Informações dos presentes
+    presentes_nomes = sorted([m.name for m in ata.present_members])
+    if presentes_nomes:
+        if len(presentes_nomes) == 1:
+            presentes_str_formatado = f"com o seguinte presente: {presentes_nomes[0]}"
+        elif len(presentes_nomes) > 1:
+            presentes_str_formatado = f"com os seguintes presentes: {', '.join(presentes_nomes[:-1])} e {presentes_nomes[-1]}"
     else:
-         story.append(Paragraph("Presentes: Não houve presentes registrados.", styles['ABNT_InfoBloco']))
-    if absent_members:
-        story.append(Paragraph("Ausentes:", styles['ABNT_ListaLabel']))
-        absent_list = ListFlowable( [ListItem(Paragraph(name, styles['ABNT_ListItem'])) for name in absent_members], bulletType='bullet', leftIndent=1.25*cm )
-        story.append(absent_list)
-    story.append(Spacer(1, 0.5*cm))
+        presentes_str_formatado = "sem a presença de integrantes registrados"
+    
+    # Início do texto introdutório
+    intro_text_parts = [
+        f"Aos {data_completa_extenso}, reuniram-se os integrantes do PET Ciências Computacionais {presentes_str_formatado}."
+    ]
+
+    # Informações dos ausentes
+    absent_members_nomes = sorted([m.name for m in ata.absent_members])
+    if absent_members_nomes:
+        if len(absent_members_nomes) == 1:
+            ausentes_str_formatado = f"Esteve ausente: {absent_members_nomes[0]}."
+        elif len(absent_members_nomes) > 1:
+            ausentes_str_formatado = f"Estiveram ausentes: {', '.join(absent_members_nomes[:-1])} e {absent_members_nomes[-1]}."
+        # Adiciona a informação dos ausentes à lista de partes do texto.
+        # Usamos um espaço antes para separar da frase anterior.
+
+
+    # Junta todas as partes do texto introdutório
+    final_intro_text = "".join(intro_text_parts)
+    
+    story.append(Paragraph(final_intro_text, styles['ABNT_Corpo']))
+    story.append(Spacer(1, 0.5*cm)) # Espaçador após o parágrafo introdutório combinado
 
     # --- Assuntos Tratados / Deliberações ---
-    story.append(Paragraph("ASSUNTOS TRATADOS E DELIBERAÇÕES", styles['ABNT_SecaoTitulo']))
     if ata.notes:
         note_paragraphs = ata.notes.strip().split('\n')
         for note_para_text in note_paragraphs:
             if note_para_text.strip():
-                processed_text = note_para_text.replace("    ", "    ")
+                processed_text = note_para_text.replace("    ", "    ")
                 story.append(Paragraph(processed_text, styles['ABNT_Corpo']))
     else:
         story.append(Paragraph("Nenhuma anotação registrada.", styles['ABNT_Corpo']))
-    story.append(Spacer(1, 0.8*cm))
+    story.append(Spacer(1, 0.5*cm))
 
-    # --- Texto de Encerramento ---
-    texto_encerramento = "E, por nada mais haver a tratar, encerrou-se a reunião."
-    story.append(Paragraph(texto_encerramento, styles['ABNT_Corpo']))
-    # Removido o Spacer(1, 1*cm) daqui, o estilo ABNT_LocalDataFinal já tem spaceBefore
-
-    # --- Local e Data no Final ---
-    # MUDANÇA: Usando "Rio Grande" fixo e o novo estilo ABNT_LocalDataFinal
+    # --- Texto de Encerramento e Local/Data Final ---
     cidade_final = "Rio Grande"
+    texto_encerramento_final = (
+        f"Posteriormente, foi lavrada a presente ata, que será lida e aprovada em próxima reunião. "
+        f"{cidade_final}, aos {data_completa_extenso} "
+    )
+    story.append(Paragraph(texto_encerramento_final, styles['ABNT_Corpo']))
+
+
     try:
-        data_extenso_final = ata.meeting_datetime.strftime('%d de %B de %Y')
-    except ValueError:
-        data_extenso_final = ata.meeting_datetime.strftime('%d/%m/%Y')
-    story.append(Paragraph(f"{cidade_final}, {data_extenso_final}.", styles['ABNT_LocalDataFinal']))
-    
-    try:
-        # MUDANÇA: Usando funções diferentes para a primeira página e páginas subsequentes
         doc.build(story, 
-                  onFirstPage=lambda canvas, doc: draw_full_header_and_page_number(canvas, doc, ata),
-                  onLaterPages=draw_page_number_only) # Só o número da página nas demais
+                  onFirstPage=lambda canvas, doc_obj: draw_first_page_header_custom(canvas, doc_obj, ata),
+                  onLaterPages=draw_page_number_only)
         pdf_data = buffer.getvalue()
     except Exception as e:
-        current_app.logger.error(f"Erro ao construir PDF (doc.build) para ata {ata.id}: {e}")
+        current_app.logger.error(f"Erro ao construir PDF (doc.build) para ata {getattr(ata, 'id', 'N/A')}: {e}", exc_info=True)
         raise Exception(f"Erro interno ao gerar PDF: {e}") from e
     finally:
         buffer.close()

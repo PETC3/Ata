@@ -506,6 +506,7 @@ body {
     font-size: 1.1em;
     transition: background-color 0.3s ease;
     border: none;
+    
 }
 .home-actions .btn-create-ata:hover {
     background-color: var(--primary-blue-dark);
@@ -514,6 +515,7 @@ body {
     margin-right: 8px;
     vertical-align: middle;
     font-size: 1.2em;
+    
 }
 
 .recent-atas-section h2 {
