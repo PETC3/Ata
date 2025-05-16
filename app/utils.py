@@ -164,10 +164,7 @@ def generate_ata_pdf(ata: 'Ata') -> bytes:
     else:
         presentes_str_formatado = "sem a presença de integrantes registrados"
     
-    # Início do texto introdutório
-    intro_text_parts = [
-        f"Aos {data_completa_extenso}, reuniram-se os integrantes do PET Ciências Computacionais {presentes_str_formatado}."
-    ]
+
 
     # Informações dos ausentes
     absent_members_nomes = sorted([m.name for m in ata.absent_members])
@@ -179,6 +176,10 @@ def generate_ata_pdf(ata: 'Ata') -> bytes:
         # Adiciona a informação dos ausentes à lista de partes do texto.
         # Usamos um espaço antes para separar da frase anterior.
 
+        # Início do texto introdutório
+    intro_text_parts = [
+        f"Aos {data_completa_extenso}, reuniram-se os integrantes do PET Ciências Computacionais {presentes_str_formatado}. {ausentes_str_formatado}"
+    ]
 
     # Junta todas as partes do texto introdutório
     final_intro_text = "".join(intro_text_parts)
