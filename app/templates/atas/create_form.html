@@ -37,25 +37,7 @@
                     {% endif %}
                 </div>
 
-                <div class="form-group">
-                    {{ form.location_type.label(class="form-label") }}
-                    {{ form.location_type(class="form-control") }}
-                    {% if form.location_type.errors %}
-                        <div class="form-error">
-                            {% for e in form.location_type.errors %}<span>{{e}}</span>{% endfor %}
-                        </div>
-                    {% endif %}
-                </div>
 
-                <div class="form-group">
-                    {{ form.location_details.label(class="form-label") }}
-                    {{ form.location_details(class="form-control", size=80) }}
-                    {% if form.location_details.errors %}
-                        <div class="form-error">
-                            {% for e in form.location_details.errors %}<span>{{e}}</span>{% endfor %}
-                        </div>
-                    {% endif %}
-                </div>
 
                 {# Campo Membros Presentes #}
                 <div id="present-members-container" class="form-group">

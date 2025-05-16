@@ -101,15 +101,6 @@ class AtaForm(FlaskForm):
         format='%Y-%m-%dT%H:%M',
         validators=[DataRequired("Data e hora são obrigatórias.")]
     )
-    location_type = SelectField(
-        'Tipo de Local da Reunião',
-        choices=[(choice.name, choice.value) for choice in LocationTypeEnum],
-        validators=[DataRequired("Selecione o tipo de local.")]
-    )
-    location_details = StringField('Detalhes do Local (Ex: Sala X, Link Meet)', validators=[
-        DataRequired("Detalhes do local são obrigatórios."),
-        Length(max=255)
-    ])
     # Usa get_active_members para as opções
     # O usuário só pode marcar membros ativos como presentes em uma nova ata
     present_members = QuerySelectMultipleField(
