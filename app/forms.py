@@ -96,7 +96,7 @@ class AtaForm(FlaskForm):
         allow_blank=False, # Precisa selecionar um projeto
         validators=[DataRequired("É necessário selecionar um projeto.")]
     )
-    meeting_datetime = DateTimeLocalField(
+    meeting_datetime = DateTimeLocalField(  
         'Data e Hora da Reunião',
         format='%Y-%m-%dT%H:%M',
         validators=[DataRequired("Data e hora são obrigatórias.")]

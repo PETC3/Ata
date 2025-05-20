@@ -133,7 +133,7 @@ def generate_ata_pdf(ata: 'Ata') -> bytes:
     base_font_name = "Times-Roman"
     bold_font_name = "Times-Bold"
 
-    styles.add(ParagraphStyle(name='ABNT_Corpo', parent=styles['Normal'], fontName=base_font_name, fontSize=12, leading=18, alignment=TA_JUSTIFY, firstLineIndent=1.25*cm, spaceBefore=0, spaceAfter=6 ))
+    styles.add(ParagraphStyle(name='ABNT_Corpo', parent=styles['Normal'], fontName=base_font_name, fontSize=12, leading=18, alignment=TA_JUSTIFY, firstLineIndent=1.25*cm, spaceBefore=0, spaceAfter=0 ))
     # ABNT_ListaLabel e ABNT_ListItem não serão mais usados para ausentes se for no mesmo parágrafo.
     # Mas podem ser úteis para outras listas, então vamos mantê-los definidos por enquanto.
     styles.add(ParagraphStyle(name='ABNT_ListaLabel', parent=styles['ABNT_Corpo'], fontName=bold_font_name, alignment=TA_LEFT, spaceBefore=0.3*cm, spaceAfter=0.1*cm, firstLineIndent=0))
@@ -185,7 +185,7 @@ def generate_ata_pdf(ata: 'Ata') -> bytes:
     final_intro_text = "".join(intro_text_parts)
     
     story.append(Paragraph(final_intro_text, styles['ABNT_Corpo']))
-    story.append(Spacer(1, 0.5*cm)) # Espaçador após o parágrafo introdutório combinado
+    #story.append(Spacer(1, 0.5*cm)) # Espaçador após o parágrafo introdutório combinado
 
     # --- Assuntos Tratados / Deliberações ---
     if ata.notes:
@@ -196,7 +196,7 @@ def generate_ata_pdf(ata: 'Ata') -> bytes:
                 story.append(Paragraph(processed_text, styles['ABNT_Corpo']))
     else:
         story.append(Paragraph("Nenhuma anotação registrada.", styles['ABNT_Corpo']))
-    story.append(Spacer(1, 0.5*cm))
+    #story.append(Spacer(1, 0.5*cm))
 
     # --- Texto de Encerramento e Local/Data Final ---
     cidade_final = "Rio Grande"
