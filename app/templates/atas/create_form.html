@@ -26,7 +26,7 @@
                     {% endif %}
                 </div>
 
-                {# Outros campos (Data/Hora, Tipo de Local, Detalhes do Local) #}
+                {# Campo Data/Hora #}
                 <div class="form-group">
                     {{ form.meeting_datetime.label(class="form-label") }}
                     {{ form.meeting_datetime(class="form-control") }}
@@ -38,13 +38,11 @@
                 </div>
 
 
-
                 {# Campo Membros Presentes #}
                 <div id="present-members-container" class="form-group">
                     {{ form.present_members.label(class="form-label") }}
-                    {# ID adicionado aqui para o JS saber onde colocar as checkboxes #}
-                    <div id="members-checkbox-list" class="checkbox-list-container"> {# Nova classe para estilizar o contêiner #}
-                        <p class="checkbox-list-placeholder">Selecione um projeto para carregar os membros.</p> {# Nova classe para placeholder #}
+                    <div id="members-checkbox-list" class="checkbox-list-container">
+                        <p class="checkbox-list-placeholder">Selecione um projeto para carregar os membros.</p>
                     </div>
                     {% if form.present_members.errors %}
                         <div class="form-error">
@@ -66,8 +64,8 @@
 
                 {# Botões de Ação #}
                 <div class="form-actions">
-                    <a href="{{ url_for('home') }}" class="btn-cancel">Cancelar</a> {# Usando a classe .btn-cancel #}
-                    {{ form.submit(class="btn-submit") }} {# Usando a classe .btn-submit #}
+                    <a href="{{ url_for('home') }}" class="btn-cancel">Cancelar</a>
+                    {{ form.submit(class="btn-submit") }}
                 </div>
             </form>
         </div>
@@ -75,7 +73,6 @@
 {% endblock %}
 
 {% block scripts %}
-    {# Seu JavaScript permanece o mesmo, mas os estilos das checkboxes serão controlados por CSS #}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const projectSelect = document.getElementById('project-select');
@@ -103,24 +100,19 @@
 
                         if (data.members && data.members.length > 0) {
                             const list = document.createElement('ul');
-                            // Estilos de ul e li serão feitos via CSS com a classe .checkbox-list
-                            list.className = 'checkbox-list'; // Adiciona uma classe à UL
+                            list.className = 'checkbox-list';
 
                             data.members.forEach(member => {
                                 const listItem = document.createElement('li');
-                                // listItem.style.marginBottom = '8px'; // Removido, será feito via CSS
-
                                 const checkbox = document.createElement('input');
                                 checkbox.type = 'checkbox';
                                 checkbox.name = 'present_members';
                                 checkbox.value = member.id;
                                 checkbox.id = `member-${member.id}`;
-                                // checkbox.style.marginRight = '5px'; // Removido
 
                                 const label = document.createElement('label');
                                 label.htmlFor = `member-${member.id}`;
                                 label.textContent = member.name;
-                                // label.style.cursor = 'pointer'; // Removido
 
                                 listItem.appendChild(checkbox);
                                 listItem.appendChild(label);
@@ -143,7 +135,6 @@
                  });
 
                 if (projectSelect.value) {
-                    console.log("Projeto pré-selecionado:", projectSelect.value, "Carregando membros...");
                     fetchAndRenderMembers(projectSelect.value);
                 } else {
                      membersListDiv.innerHTML = placeholderText;

@@ -24,7 +24,6 @@
                             <strong>{{ ata.project.name }}</strong> -
                             <span class="meeting-time">{{ ata.meeting_datetime.strftime('%d/%m/%Y %H:%M') }}</span><br>
                         </div>
-
                         <div class="ata-actions">
                             <a href="{{ url_for('download_ata_pdf', id=ata.id) }}" title="Baixar PDF" class="btn-download">
                                 <ion-icon name="download-outline"></ion-icon>

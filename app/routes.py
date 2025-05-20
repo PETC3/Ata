@@ -295,8 +295,6 @@ def create_ata(project_id):
         ata = Ata(
             project=form.project.data,
             meeting_datetime=form.meeting_datetime.data,
-            location_type=LocationTypeEnum[form.location_type.data],
-            location_details=form.location_details.data,
             notes=form.notes.data
         )
         # Associa os membros ATIVOS selecionados como presentes

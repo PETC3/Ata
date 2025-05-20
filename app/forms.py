@@ -2,7 +2,7 @@
 
 from flask_wtf import FlaskForm
 from wtforms import (StringField, PasswordField, SubmitField, TextAreaField,
-                     SelectField, DateTimeLocalField, HiddenField)
+                     SelectField, DateTimeLocalField, HiddenField, SelectMultipleField)
 from wtforms.validators import DataRequired, Length, Optional, ValidationError
 from flask_wtf.file import FileField, FileAllowed # Para upload de logo
 # Importa campos específicos para lidar com queries do SQLAlchemy
@@ -11,7 +11,7 @@ from wtforms_sqlalchemy.fields import QuerySelectField, QuerySelectMultipleField
 from wtforms import widgets
 
 # Importa os modelos necessários para as queries dos campos
-from .models import Project, Member, LocationTypeEnum, User
+from .models import Project, Member, User
 
 # --- Funções Query Factory Atualizadas ---
 
@@ -101,6 +101,7 @@ class AtaForm(FlaskForm):
         format='%Y-%m-%dT%H:%M',
         validators=[DataRequired("Data e hora são obrigatórias.")]
     )
+
     # Usa get_active_members para as opções
     # O usuário só pode marcar membros ativos como presentes em uma nova ata
     present_members = QuerySelectMultipleField(

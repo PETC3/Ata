@@ -136,7 +136,9 @@ class Ata(db.Model):
     __tablename__ = 'ata'
 
     id = db.Column(db.Integer, primary_key=True)
-    meeting_datetime = db.Column(db.DateTime, nullable=False, index=True)
+    meeting_datetime = db.Column(db.DateTime, nullable=False)
+    location_type = db.Column(SQLAlchemyEnum(LocationTypeEnum, name="location_type_enum"), nullable=True)
+    location_details = db.Column(db.String(255), nullable=True)
     notes = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
