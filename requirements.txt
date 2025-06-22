@@ -6,12 +6,12 @@ Werkzeug==3.0.1
 Flask-SQLAlchemy==3.1.1
 SQLAlchemy==2.0.25
 Flask-Migrate==4.0.5
-psycopg2-binary==2.9.9  # Versão estável para Render
+psycopg2-binary==2.9.9
 
 # Formulários e Autenticação
 Flask-WTF==1.2.1
 WTForms==3.1.2
-WTForms-SQLAlchemy==0.3.dev1  # Pode precisar de ajustes
+WTForms-SQLAlchemy==0.4.2  # Versão estável
 Flask-Login==0.6.3
 
 # Utilitários
