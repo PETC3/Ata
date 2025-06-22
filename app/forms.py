@@ -2,7 +2,7 @@
 
 from flask_wtf import FlaskForm
 from wtforms import (StringField, PasswordField, SubmitField, TextAreaField,
-                     SelectField, DateTimeLocalField, HiddenField, SelectMultipleField)
+                     SelectField, DateTimeField, HiddenField, SelectMultipleField)
 from wtforms.validators import DataRequired, Length, Optional, ValidationError
 from flask_wtf.file import FileField, FileAllowed # Para upload de logo
 # Importa campos específicos para lidar com queries do SQLAlchemy
@@ -96,7 +96,7 @@ class AtaForm(FlaskForm):
         allow_blank=False, # Precisa selecionar um projeto
         validators=[DataRequired("É necessário selecionar um projeto.")]
     )
-    meeting_datetime = DateTimeLocalField(  
+    meeting_datetime = DateTimeField(  
         'Data e Hora da Reunião',
         format='%Y-%m-%dT%H:%M',
         validators=[DataRequired("Data e hora são obrigatórias.")]
