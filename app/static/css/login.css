@@ -1,0 +1,332 @@
+/* static/css/login.css - Com Fundo Gradiente, Novo Botão e Partículas */
+
+/* =============== Variáveis Globais =============== */
+:root {
+    /* Cor de acento original (verde petróleo) - para referências ou outros elementos */
+    --original-primary-accent: #004d7a;
+    --original-primary-accent-dark: color-mix(in srgb, var(--original-primary-accent) 85%, black);
+
+    /* Novas cores para o botão de login */
+    --login-btn-bg: #ffffff; /* Botão branco */
+    --login-btn-text: #004d7a; /* Texto azul escuro (cor do gradiente) */
+    --login-btn-hover-bg: #e9ecef; /* Hover cinza bem claro */
+    /* Para hover do botão se você quiser usar a cor original: */
+    /* --login-btn-hover-bg: color-mix(in srgb, var(--original-primary-accent) 10%, white); */
+    /* --login-btn-hover-text: var(--original-primary-accent); */
+
+    --white: #fff;
+    /* Fundo da página com gradiente que você escolheu */
+    --page-bg-gradient: linear-gradient(to right top, #051937, #004d7a, #008793);
+
+    /* Efeito Glassmorphism */
+    --form-bg-glass: rgba(255, 255, 255, 0.1); /* Mais transparente */
+    --form-border-glass: rgba(255, 255, 255, 0.18);
+    --text-color-on-glass: #f0f8ff; /* AliceBlue - texto quase branco para contraste */
+    --text-muted-on-glass: #bdc7d3; /* Cinza azulado claro */
+    --card-shadow-glass: 0 8px 32px 0 rgba(0, 20, 60, 0.2); /* Sombra mais escura/azulada */
+
+    /* Cores de erro */
+    --error-color: #e74c3c;
+    --error-bg-glass: rgba(252, 165, 165, 0.8); /* Fundo de erro para o vidro */
+    --error-border-glass: rgba(254, 226, 226, 0.85);
+
+    /* Mapeando variáveis para nomes consistentes (alguns podem ser redundantes agora) */
+    --main-bg: var(--page-bg-gradient); /* Body usará o gradiente */
+    --card-bg: var(--form-bg-glass);
+    --black1: var(--text-color-on-glass);
+    --black2: var(--text-muted-on-glass);
+    
+    /* Variáveis para o botão de submit (se referenciadas pelo HTML) */
+    --yellow: var(--login-btn-bg); 
+    --text-on-accent: var(--login-btn-text);
+    --primary-blue-dark: var(--login-btn-hover-bg); /* Para o hover do botão de submit */
+    
+    --light-border-color: var(--form-border-glass); /* Borda dos inputs */
+    --card-shadow: var(--card-shadow-glass);
+}
+
+/* ===================================================================== */
+/* ESTILOS MODERNOS PARA A PÁGINA DE LOGIN (COM GLASSMORPHISM)         */
+/* ===================================================================== */
+
+body.login-page-body {
+    font-family: "Ubuntu", sans-serif;
+    background: var(--main-bg); /* Aplica o gradiente */
+    /* Para gradiente animado (opcional, descomente e ajuste @keyframes) */
+    /* background-size: 400% 400%; */
+    /* animation: gradientAnimation 20s ease infinite; */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
+    line-height: 1.6;
+    overflow: hidden; /* Para evitar barras de rolagem das partículas/animações */
+    position: relative; /* Para z-index do overlay e partículas */
+}
+
+
+
+/* Container para as partículas (se estiver usando a biblioteca JS) */
+#particles-background {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: -1; /* Atrás de tudo, exceto talvez um fundo de body ainda mais básico */
+}
+.titulo-com-logo {
+    display: flex;
+    align-items: flex-end; /* Se você quiser que eles fiquem alinhados pela base */
+    justify-content: center;
+    position: relative; /* Container com posição relativa para que os filhos se posicionem em relação a ele */
+    color: var(--white);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    margin: 0;
+    font-size: 2em;
+    font-weight: 500;
+}
+
+.logo-pet {
+    height: 2em;
+    width: auto;
+    position: absolute; /* Agora podemos mover a logo onde quisermos */
+    top: -20%; /* Ajuste vertical da logo */
+    left: 15%; /* Ajuste horizontal da logo */
+    /* Se quiser "sobrepor" a logo ao texto, você pode usar valores negativos aqui */
+    transform: translateY(-10px); /* Exemplo de sobreposição, movendo a logo para cima */
+}
+
+.titulo-com-logo h1 {
+    position: absolute; /* Posiciona o título diretamente */
+    top: 30px; /* Ajuste o valor conforme necessário */
+    left: 0; /* Ajuste para centralizar ou posicionar à esquerda */
+    font-size: 1.5em; /* Ajuste o tamanho do título se necessário */
+    margin: 0; /* Remove margens extras */
+}
+.login-container {
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--form-border-glass);
+    padding: 40px;
+    border-radius: 18px;
+    box-shadow: var(--card-shadow);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+    position: relative;
+    z-index: 1; /* Acima do fundo e do overlay (se houver) */
+    opacity: 0; /* Para animação de entrada */
+    transform: translateY(20px) scale(0.98);
+    animation: fadeInForm 0.7s 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes fadeInForm {
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Se você tinha um slideshow de IMAGENS antes e quer remover, apague estas regras: */
+/*
+.login-background-slideshow { ... }
+.login-background-slideshow .slide { ... }
+.login-background-slideshow .slide.active { ... }
+*/
+
+.login-logo {
+    max-width: 120px;
+    margin-bottom: 25px;
+}
+
+.login-container h1 {
+    color: var(--white); /* Título branco para bom contraste com fundos escuros/coloridos */
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    margin-bottom: 15px;
+    font-size: 2em;
+    font-weight: 500;
+}
+.login-container p.subtitle {
+    color: var(--text-muted-on-glass);
+    margin-bottom: 30px;
+    font-size: 1em;
+}
+
+
+.form-group {
+    margin-bottom: 25px;
+    text-align: left;
+    position: relative;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-color-on-glass);
+    font-weight: 500;
+    font-size: 0.9em;
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 1em;
+    color: var(--text-color-on-glass);
+    background-color: rgba(255, 255, 255, 0.1); /* Fundo do input bem transparente */
+    border: 1px solid var(--form-border-glass);
+    border-radius: 8px;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+.form-control::placeholder {
+    color: var(--text-muted-on-glass);
+    opacity: 0.7;
+}
+
+.form-group .input-icon {
+    position: absolute;
+    left: 15px;
+    top: 42px; /* Ajuste fino aqui para alinhar com o texto do input */
+    font-size: 1.2em;
+    color: var(--text-muted-on-glass);
+    pointer-events: none;
+    z-index: 3;
+}
+.form-control.has-icon {
+    padding-left: 45px;
+}
+
+.form-control:focus {
+    border-color: var(--original-primary-accent); /* Destaque com o verde petróleo original */
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--original-primary-accent) 25%, transparent);
+    background-color: rgba(255, 255, 255, 0.2); /* Um pouco mais opaco no foco */
+}
+
+.form-error {
+    color: var(--error-color);
+    background-color: var(--error-bg-glass);
+    border: 1px solid var(--error-border-glass); /* Adiciona uma borda também */
+    padding: 8px 10px; /* Mais padding */
+    border-radius: 6px; /* Consistente */
+    font-size: 0.9em; /* Um pouco maior */
+    margin-top: 8px;
+    animation: shake 0.4s ease;
+}
+.form-error span { display: block; }
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-8px); } /* Menos agressivo */
+    40%, 80% { transform: translateX(8px); }
+}
+
+
+.login-form .btn-submit {
+    width: 100%;
+    padding: 14px 20px;
+    font-size: 1.05em;
+    font-weight: 600; /* Mais peso para o botão */
+    margin-top: 15px;
+    background-color: var(--login-btn-bg); /* Fundo branco */
+    color: var(--login-btn-text);       /* Texto azul escuro */
+    border: none; /* Removida a borda sutil, opcional */
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.08); /* Sombra um pouco mais definida */
+}
+.login-form .btn-submit:hover {
+    background-color: var(--login-btn-hover-bg); /* Cinza claro no hover */
+    /* color: var(--login-btn-hover-text); /* Se o texto do hover for diferente */
+    transform: translateY(-2px); /* Efeito de elevação maior */
+    box-shadow: 0 5px 10px rgba(0,0,0,0.12);
+}
+.login-form .btn-submit:active {
+    transform: translateY(0px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+}
+
+
+
+.login-links {
+    margin-top: 30px;
+    font-size: 0.9em;
+}
+.login-links p {
+    margin-bottom: 10px;
+}
+.login-links a {
+    color: var(--white); /* Links brancos para contraste */
+    text-decoration: none;
+    font-weight: 500;
+}
+.login-links a:hover {
+    text-decoration: underline;
+    color: var(--text-muted-on-glass); /* Ou uma cor de acento clara */
+}
+
+/* Flash messages */
+.login-container .flash-messages {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 25px;
+}
+.login-container .flash-messages li {
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    border-radius: 0px;
+    text-align: left;
+    font-size: 0.95em;
+    border-width: 1px;
+    border-style: solid;
+}
+.flash-success { background-color: rgba(74, 222, 128, 0.15); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); color: #bbf7d0; border-color: rgba(74, 222, 128, 0.3); }
+.flash-danger  { background-color: rgba(248, 113, 113, 0.15); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); color: #fecaca; border-color: rgba(248, 113, 113, 0.3); }
+.flash-info    { background-color: rgba(96, 165, 250, 0.15); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); color: #bfdbfe; border-color: rgba(96, 165, 250, 0.3); }
+.flash-warning { background-color: rgba(251, 191, 36, 0.15); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); color: #fde68a; border-color: rgba(251, 191, 36, 0.3); }
+
+
+/* Checkbox (se usar) */
+.form-check {
+    display: flex;
+    align-items: center;
+    text-align: left;
+    margin-bottom: 25px;
+    margin-top: -10px;
+}
+.form-check-input {
+    appearance: none; -webkit-appearance: none; -moz-appearance: none;
+    width: 18px; height: 18px;
+    border: 2px solid var(--form-border-glass);
+    border-radius: 4px; margin-right: 10px; cursor: pointer; position: relative;
+    transition: background-color 0.2s, border-color 0.2s;
+    background-color: rgba(255,255,255,0.2); /* Fundo do checkbox mais sutil */
+}
+.form-check-input:checked {
+    background-color: var(--original-primary-accent); /* Cor do seu verde petróleo original */
+    border-color: var(--original-primary-accent);
+}
+.form-check-input:checked::before {
+    content: '✔'; font-size: 12px; color: var(--white);
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+}
+.form-check-label {
+    margin-bottom: 0; font-weight: normal;
+    color: var(--text-muted-on-glass);
+    font-size: 0.9em; cursor: pointer;
+}
+
+
+@keyframes gradientAnimation {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}

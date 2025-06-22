@@ -1,0 +1,50 @@
+{# seu_projeto_flask/app/templates/home.html - Atualizado #}
+
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="home-page-header">
+        <h1>Bem-vindo(a), {{ current_user.username }}!</h1>
+        <p class="lead">Esta é a página inicial do seu Gestor de Atas.</p>
+    </div>
+
+    <div class="home-actions">
+        <a href="{{ url_for('create_ata') }}" class="btn-create-ata">
+            Criar Nova Ata
+        </a>
+    </div>
+
+    <div class="recent-atas-section">
+        <h2>Atas Recentes</h2>
+        {% if recent_atas %}
+            <ul class="recent-atas-list">
+                {% for ata in recent_atas %}
+                    <li>
+                        <div class="ata-info">
+                            <strong>{{ ata.project.name }}</strong> -
+                            <span class="meeting-time">{{ ata.meeting_datetime.strftime('%d/%m/%Y %H:%M') }}</span><br>
+                        </div>
+                        <div class="ata-actions">
+                            <a href="{{ url_for('download_ata_pdf', id=ata.id) }}" title="Baixar PDF" class="btn-download">
+                                <ion-icon name="download-outline"></ion-icon>
+                            </a>
+
+                            {# Link/Botão Editar Ata (Ainda comentado) #}
+                            {# <!-- <a href="{{ url_for('edit_ata', id=ata.id) }}" title="Editar Ata"><ion-icon name="create-outline"></ion-icon></a> --> #}
+
+                            <form action="{{ url_for('delete_ata', id=ata.id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Tem certeza que deseja excluir esta ata? Esta ação não pode ser desfeita.');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" title="Excluir Ata" class="btn-delete">
+                                     <ion-icon name="trash-outline"></ion-icon>
+                                </button>
+                            </form>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p style="color: #777;">Nenhuma ata foi criada ainda.</p>
+        {% endif %}
+    </div>
+
+{% endblock %}

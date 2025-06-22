@@ -1,0 +1,38 @@
+# seu_projeto_flask/requirements.txt
+
+# Core Framework
+Flask
+
+# Banco de Dados e Migrações
+Flask-SQLAlchemy
+Flask-Migrate
+SQLAlchemy # Normalmente já vem com Flask-SQLAlchemy, mas bom explicitar
+
+# Formulários
+Flask-WTF
+WTForms[email] # Adiciona validação de email opcional ao WTForms
+# WTForms-SQLAlchemy é necessário para QuerySelectField
+WTForms-SQLAlchemy
+
+# Autenticação
+Flask-Login
+Werkzeug # Essencial para Flask e Flask-Login (hashes de senha, utils)
+
+# Geração de PDF
+reportlab
+
+# Manipulação de Imagens (necessário para logos e ReportLab com imagens)
+Pillow
+
+# Variáveis de Ambiente (para carregar config do .env)
+python-dotenv
+
+# (Opcional) Para melhorias no servidor de desenvolvimento ou produção
+# gunicorn # Servidor WSGI recomendado para produção
+# waitress # Outra opção de servidor WSGI puro Python
+
+num2words
+
+psycopg2-binary
+
+freeze

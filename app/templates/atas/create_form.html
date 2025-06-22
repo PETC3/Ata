@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title if title else "Criar Nova Ata" }}{% endblock %}
+
+{% block content %}
+    <div class="page-header">
+        <h1>{{ title if title else "Criar Nova Ata" }}</h1>
+        {% if selected_project %}
+            <p class="lead">Criando ata para o projeto: <strong>{{ selected_project.name }}</strong></p>
+        {% endif %}
+    </div>
+
+    <div class="content-panel"> {# Envolvendo o formulário em um painel #}
+        <div class="panel-body">
+            <form action="{{ url_for('create_ata', project_id=selected_project.id if selected_project else None) }}" method="post" novalidate>
+                {{ form.hidden_tag() }} {# CSRF #}
+
+                {# Campo Projeto (Dropdown) #}
+                <div class="form-group">
+                    {{ form.project.label(class="form-label") }}
+                    {{ form.project(id="project-select", class="form-control") }} {# ID é importante para o JS #}
+                    {% if form.project.errors %}
+                        <div class="form-error">
+                            {% for error in form.project.errors %}<span>{{ error }}</span>{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                {# Campo Data/Hora #}
+                <div class="form-group">
+                    {{ form.meeting_datetime.label(class="form-label") }}
+                    {{ form.meeting_datetime(class="form-control") }}
+                    {% if form.meeting_datetime.errors %}
+                        <div class="form-error">
+                            {% for e in form.meeting_datetime.errors %}<span>{{e}}</span>{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+
+                {# Campo Membros Presentes #}
+                <div id="present-members-container" class="form-group">
+                    {{ form.present_members.label(class="form-label") }}
+                    <div id="members-checkbox-list" class="checkbox-list-container">
+                        <p class="checkbox-list-placeholder">Selecione um projeto para carregar os membros.</p>
+                    </div>
+                    {% if form.present_members.errors %}
+                        <div class="form-error">
+                            {% for error in form.present_members.errors %}<span>{{ error }}</span>{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                {# Campo Notas / Assuntos Tratados #}
+                <div class="form-group">
+                    {{ form.notes.label(class="form-label") }}
+                    {{ form.notes(rows=10, class="form-control") }}
+                    {% if form.notes.errors %}
+                        <div class="form-error">
+                            {% for e in form.notes.errors %}<span>{{e}}</span>{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                {# Botões de Ação #}
+                <div class="form-actions">
+                    <a href="{{ url_for('home') }}" class="btn-cancel">Cancelar</a>
+                    {{ form.submit(class="btn-submit") }}
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const projectSelect = document.getElementById('project-select');
+            const membersListDiv = document.getElementById('members-checkbox-list');
+            const placeholderText = '<p class="checkbox-list-placeholder">Selecione um projeto para carregar os membros.</p>';
+            const loadingText = '<p class="checkbox-list-placeholder">Carregando membros...</p>';
+
+            function fetchAndRenderMembers(projectId) {
+                membersListDiv.innerHTML = loadingText;
+
+                if (!projectId) {
+                    membersListDiv.innerHTML = placeholderText;
+                    return;
+                }
+
+                fetch(`/api/project/${projectId}/members`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Erro HTTP: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        membersListDiv.innerHTML = ''; 
+
+                        if (data.members && data.members.length > 0) {
+                            const list = document.createElement('ul');
+                            list.className = 'checkbox-list';
+
+                            data.members.forEach(member => {
+                                const listItem = document.createElement('li');
+                                const checkbox = document.createElement('input');
+                                checkbox.type = 'checkbox';
+                                checkbox.name = 'present_members';
+                                checkbox.value = member.id;
+                                checkbox.id = `member-${member.id}`;
+
+                                const label = document.createElement('label');
+                                label.htmlFor = `member-${member.id}`;
+                                label.textContent = member.name;
+
+                                listItem.appendChild(checkbox);
+                                listItem.appendChild(label);
+                                list.appendChild(listItem);
+                            });
+                            membersListDiv.appendChild(list);
+                        } else {
+                            membersListDiv.innerHTML = '<p class="checkbox-list-placeholder">Este projeto não possui membros associados.</p>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro ao buscar membros:', error);
+                        membersListDiv.innerHTML = `<p class="form-error">Erro ao carregar membros. (${error.message}). Verifique o console.</p>`;
+                    });
+            }
+
+            if (projectSelect) {
+                 projectSelect.addEventListener('change', function() {
+                    fetchAndRenderMembers(this.value);
+                 });
+
+                if (projectSelect.value) {
+                    fetchAndRenderMembers(projectSelect.value);
+                } else {
+                     membersListDiv.innerHTML = placeholderText;
+                }
+            } else {
+                console.error("Elemento #project-select não encontrado!");
+            }
+        });
+    </script>
+{% endblock %}

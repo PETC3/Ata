@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title if title else "Login" }} - Gestor de Atas</title>
+
+    <!-- Estilo específico para a página de login -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='uploads/icone.png') }}">
+
+</head>
+
+<!-- Biblioteca de partículas para animação de fundo -->
+<script src="https://cdn.jsdelivr.net/npm/tsparticles@2/tsparticles.bundle.min.js"></script>
+<script>
+    // Inicializa a animação de partículas após o carregamento da página
+    document.addEventListener('DOMContentLoaded', async () => {
+        await tsParticles.load("particles-background", {
+            fpsLimit: 60,
+            particles: {
+                number: { value: 60, density: { enable: true, value_area: 800 }},
+                color: { value: ["#FFFFFF", "#129feb", "#8ec5fc", "#f0f8ff"] },
+                shape: { type: "circle" },
+                opacity: {
+                    value: {min: 0.2, max: 0.7},
+                    animation: { enable: true, speed: 0.8, minimumValue: 0.1, sync: false }
+                },
+                size: {
+                    value: {min: 1, max: 3.5},
+                    animation: { enable: true, speed: 3, minimumValue: 0.5, sync: false }
+                },
+                move: {
+                    enable: true,
+                    speed: 1.2,
+                    random: true,
+                    outModes: { default: "out" },
+                },
+                links: {
+                    enable: true,
+                    distance: 130,
+                    color: "rgba(255,255,255,0.15)",
+                    opacity: 0.15,
+                    width: 1
+                }
+            },
+            interactivity: {
+                detectsOn: "canvas",
+                events: {
+                    onHover: { enable: true, mode: "grab" },
+                    onClick: { enable: true, mode: "repulse" },
+                },
+                modes: {
+                    grab: { distance: 150, links: { opacity: 0.3 } },
+                    repulse: { distance: 100, duration: 0.4 },
+                },
+            },
+            detectRetina: true
+        });
+    }); 
+</script>
+
+<body class="login-page-body">
+    <!-- Container principal do login -->
+    <div class="login-container">
+        <h1 class="titulo-com-logo">
+    <img src="{{ url_for('static', filename='uploads/logo_branca.png') }}" alt="Logo PET" class="logo-pet">
+    PET C3
+</h1>
+        {% if subtitle %}
+        <p class="subtitle">{{ subtitle }}</p>
+        {% endif %}
+
+        <!-- Exibe mensagens de erro, aviso ou sucesso -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flash-messages">
+                {% for category, message in messages %}
+                    <li class="flash-{{ category }}">{{ message }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Formulário de login -->
+        <form method="POST" action="{{ url_for('login') }}" novalidate class="login-form">
+            {{ form.hidden_tag() }}
+
+            <div class="form-group">
+                {{ form.username.label(class="form-label") }}
+                {{ form.username(class="form-control", placeholder="Seu usuário") }}
+                {% if form.username.errors %}
+                <div class="form-error">
+                    {% for error in form.username.errors %}
+                        <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.password.label(class="form-label") }}
+                {{ form.password(class="form-control", placeholder="Sua senha") }}
+                {% if form.password.errors %}
+                <div class="form-error">
+                    {% for error in form.password.errors %}
+                        <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.submit(class="btn-submit") }}
+            </div>
+        </form>
+    </div>
+
+
+</body>
+</html>
