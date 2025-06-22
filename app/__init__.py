@@ -33,9 +33,14 @@ def create_app(config_class=Config):
     Permite criar múltiplas instâncias com diferentes configurações (ex: para testes).
     """
     app = Flask(__name__, instance_relative_config=True)
+    
 
     # Carrega a configuração a partir do objeto Config importado
     app.config.from_object(config_class)
+    
+        # Só depois sobrepõe (se quiser forçar Debug)
+    app.config['ENV'] = 'development'
+    app.config['DEBUG'] = True
 
     # Tenta carregar configuração adicional da pasta 'instance', se existir
     # Útil para segredos que não devem ir para o controle de versão (como API keys)
