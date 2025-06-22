@@ -1,1 +1,1 @@
-python-3.9.13  # Versão compatível com psycopg2-binary no Render
+python-3.11.8
