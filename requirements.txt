@@ -1,40 +1,24 @@
-# seu_projeto_flask/requirements.txt
+# Core
+Flask==3.0.2
+Werkzeug==3.0.1
 
-# Core Framework
-Flask
+# Banco de Dados
+Flask-SQLAlchemy==3.1.1
+SQLAlchemy==2.0.25
+Flask-Migrate==4.0.5
+psycopg2-binary==2.9.9  # Versão estável para Render
 
-# Banco de Dados e Migrações
-Flask-SQLAlchemy
-Flask-Migrate
-SQLAlchemy # Normalmente já vem com Flask-SQLAlchemy, mas bom explicitar
+# Formulários e Autenticação
+Flask-WTF==1.2.1
+WTForms==3.1.2
+WTForms-SQLAlchemy==0.3.dev1  # Pode precisar de ajustes
+Flask-Login==0.6.3
 
-# Formulários
-Flask-WTF
-WTForms[email] # Adiciona validação de email opcional ao WTForms
-# WTForms-SQLAlchemy é necessário para QuerySelectField
-WTForms-SQLAlchemy
+# Utilitários
+python-dotenv==1.0.0
+num2words==0.5.13
+reportlab==4.1.0
+Pillow==10.2.0
 
-# Autenticação
-Flask-Login
-Werkzeug # Essencial para Flask e Flask-Login (hashes de senha, utils)
-
-# Geração de PDF
-reportlab
-
-# Manipulação de Imagens (necessário para logos e ReportLab com imagens)
-Pillow
-
-# Variáveis de Ambiente (para carregar config do .env)
-python-dotenv
-
-# (Opcional) Para melhorias no servidor de desenvolvimento ou produção
-# gunicorn # Servidor WSGI recomendado para produção
-# waitress # Outra opção de servidor WSGI puro Python
-
-num2words
-
-psycopg2-binary
-
-freeze
-gunicorn
-
+# Produção
+gunicorn==21.2.0
