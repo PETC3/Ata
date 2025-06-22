@@ -22,11 +22,6 @@ from .forms import (LoginForm, MemberForm, ProjectForm, AtaForm,
 from .utils import generate_ata_pdf
 
 # --- Rotas de Autenticação ---
-@current_app.route('/')
-def home():
-    """Rota inicial (adicione lógica personalizada se necessário)"""
-    return redirect(url_for('login'))
-
 @current_app.route('/login', methods=['GET', 'POST'])
 def login():
     """Rota para login do usuário."""
