@@ -368,3 +368,11 @@ def internal_error(error):
     db.session.rollback()
     current_app.logger.error(f"Erro interno do servidor: {error}", exc_info=True)
     return render_template('errors/500.html', title='Erro Interno'), 500
+
+@current_app.route('/create_db')
+def create_db():
+    try:
+        db.create_all()
+        return 'Banco de dados criado com sucesso!'
+    except Exception as e:
+        return f'Ocorreu um erro ao criar o banco: {e}'
