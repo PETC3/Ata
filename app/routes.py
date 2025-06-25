@@ -376,3 +376,11 @@ def create_db():
         return 'Banco de dados criado com sucesso!'
     except Exception as e:
         return f'Ocorreu um erro ao criar o banco: {e}'
+@current_app.route('/upgrade_db')
+def upgrade_db():
+    try:
+        from flask_migrate import upgrade
+        upgrade()
+        return 'Migração aplicada com sucesso!'
+    except Exception as e:
+        return f'Erro ao aplicar migração: {e}'
