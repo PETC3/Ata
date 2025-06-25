@@ -28,6 +28,18 @@ def login():
     if current_user.is_authenticated:
         return redirect(url_for('home'))
 
+@current_app.route('/init_admin')
+def init_admin():
+    if User.query.filter_by(username='admin').first():
+        return jsonify({'mensagem': 'Usuário admin já existe'})
+
+    novo_user = User(username='petc3furg')
+    novo_user.definir_senha('petamigos2025')  # Ou User.gerar_hash('senha123')
+    db.session.add(novo_user)
+    db.session.commit()
+    
+    return jsonify({'mensagem': 'Usuário admin criado com sucesso'})
+
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
