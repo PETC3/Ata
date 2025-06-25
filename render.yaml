@@ -1,7 +1,7 @@
 services:
   - type: web
-    name: minha-app
-    env: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn run:app
-    runtime: python-3.11.9
+    name: ata-flask
+    env: docker
+    plan: free
+    autoDeploy: true
+    branch: main
