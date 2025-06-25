@@ -396,3 +396,14 @@ def upgrade_db():
         return 'Migração aplicada com sucesso!'
     except Exception as e:
         return f'Erro ao aplicar migração: {e}'
+@current_app.route('/init_admin')
+def init_admin():
+    if User.query.filter_by(username='admin').first():
+        return jsonify({'mensagem': 'Usuário admin já existe'})
+
+    novo_user = User(username='petc3furg')
+    novo_user.set_password('petamigos2025')
+    db.session.add(novo_user)
+    db.session.commit()
+    
+    return jsonify({'mensagem': 'Usuário admin criado com sucesso'})
