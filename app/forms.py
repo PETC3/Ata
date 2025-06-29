@@ -12,6 +12,7 @@ from wtforms import widgets
 
 # Importa os modelos necessários para as queries dos campos
 from .models import Project, Member, User
+from datetime import datetime
 
 # --- Funções Query Factory Atualizadas ---
 
@@ -93,12 +94,13 @@ class AtaForm(FlaskForm):
         'Projeto da Reunião',
         query_factory=get_active_projects,
         get_label='name',
-        allow_blank=False, # Precisa selecionar um projeto
+        allow_blank=False,
         validators=[DataRequired("É necessário selecionar um projeto.")]
     )
     meeting_datetime = DateTimeField(  
         'Data e Hora da Reunião',
         format='%Y-%m-%dT%H:%M',
+        default=datetime.now,
         validators=[DataRequired("Data e hora são obrigatórias.")]
     )
 
