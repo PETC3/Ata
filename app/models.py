@@ -118,9 +118,10 @@ class Project(db.Model):
 
     @property
     def active_members(self):
-        """Retorna uma lista de objetos Member ATIVOS associados a este projeto."""
-        # Filtra a lista carregada pelo relacionamento 'members'
-        return [m for m in self.members if m.is_active]
+        return sorted(
+        (m for m in self.members if m.is_active),
+        key=lambda m: m.name.lower()
+    )
 
     def __repr__(self):
         return f'<Project {self.name}>'
