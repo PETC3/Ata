@@ -26,17 +26,22 @@
                     {% endif %}
                 </div>
 
-                {# Campo Data/Hora #}
+
+                {# Campo Data/Hora (datetime-local) #}
                 <div class="form-group">
                     {{ form.meeting_datetime.label(class="form-label") }}
-                    {{ form.meeting_datetime(class="form-control") }}
+                    <input type="datetime-local"
+                           name="{{ form.meeting_datetime.name }}"
+                           id="{{ form.meeting_datetime.id }}"
+                           class="form-control"
+                           value="{{ form.meeting_datetime.data.strftime('%Y-%m-%dT%H:%M') if form.meeting_datetime.data else '' }}"
+                           required>
                     {% if form.meeting_datetime.errors %}
                         <div class="form-error">
                             {% for e in form.meeting_datetime.errors %}<span>{{e}}</span>{% endfor %}
                         </div>
                     {% endif %}
                 </div>
-
 
                 {# Campo Membros Presentes #}
                 <div id="present-members-container" class="form-group">
