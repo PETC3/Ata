@@ -9,7 +9,7 @@ class Config:
 
     # --- NOVA CONFIGURAÇÃO DO BANCO DE DADOS ---
     # Usando suas credenciais REAIS que você criou no PostgreSQL
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URI') or \
-        'postgresql://petc3furg:petamigos2025@localhost:5432/ata_db' # <-- VEJA A MUDANÇA AQUI
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URI')
+
     
     SQLALCHEMY_TRACK_MODIFICATIONS = False
