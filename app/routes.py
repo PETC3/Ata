@@ -14,7 +14,7 @@ from werkzeug.datastructures import FileStorage
 # Importações locais da aplicação
 from . import db # Importa a instância db de __init__.py
 # Importa os modelos
-from .models import User, Member, Project, Ata, LocationTypeEnum
+from .models import User, Member, Project, Ata, LocationTypeEnum, AtaAbsentJustification
 # Importa os formulários e as funções factory necessárias
 from .forms import (LoginForm, MemberForm, ProjectForm, AtaForm,
                     get_active_members, get_active_projects)
@@ -291,17 +291,60 @@ def create_ata(project_id):
         project_members = selected_project_in_form.active_members
 
     if form.validate_on_submit():
+        
+        # 0. Cria a Ata (sem membros ainda)
         ata = Ata(
             project=form.project.data,
             meeting_datetime=form.meeting_datetime.data,
             notes=form.notes.data
         )
-        # Associa os membros ATIVOS selecionados como presentes
-        ata.present_members = form.present_members.data
         db.session.add(ata)
+        db.session.flush()
+        # --- NOVO BLOCO: Processar Presenças e Justificativas ---
+        
+        # 1. IDs dos Membros Presentes (aqueles que foram marcados no checkbox)
+        # O Flask-WTF já deve ter populado form.present_members.data com os objetos Member.
+        present_members_list = form.present_members.data
+        present_member_ids = {m.id for m in present_members_list}
+
+        # 2. Associa os Membros Presentes à Ata
+        # (O Flask-WTF já deveria ter feito isso, mas vamos reatribuir por segurança)
+        ata.present_members = present_members_list
+        
+        # 3. Processar Justificativas de Ausência
+        
+        # Obter a lista completa de membros ATIVOS do projeto
+        selected_project = form.project.data # O projeto selecionado no formulário
+        all_active_members = selected_project.active_members
+        
+        # Vamos iterar sobre TODOS os membros ATIVOS do projeto
+        for member in all_active_members:
+            # Se o membro NÃO está na lista de presentes, ele está ausente.
+            if member.id not in present_member_ids:
+                
+                # Checar se há uma justificativa enviada pelo campo de texto dinâmico
+                # O nome do campo é 'justification_<id>'
+                justification_key = f'justification_{member.id}'
+                
+                # Use request.form diretamente, pois é um campo dinâmico, não do Flask-WTF
+                justification_text = request.form.get(justification_key, '').strip()
+                
+                # Se a justificativa não estiver vazia, salvamos o registro
+                if justification_text:
+                    # Cria um novo registro na tabela de justificativas
+                    justification_record = AtaAbsentJustification(
+                        ata_id=ata.id, # Deve ser o ID da Ata que será persistida
+                        member_id=member.id,
+                        justification=justification_text
+                    )
+                    db.session.add(justification_record)
+                    
+        # --- FIM DO NOVO BLOCO ---
+        
         try:
             db.session.commit()
             flash('Ata criada com sucesso!', 'success')
+            # Retorna para a home ou para a nova view_ata
             return redirect(url_for('home'))
         except Exception as e:
             db.session.rollback()

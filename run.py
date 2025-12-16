@@ -48,5 +48,5 @@ def create_user(username, password):
 # --- Fim do Comando Personalizado ---
 
 # Permite executar o servidor diretamente com `python run.py`
-#if __name__ == '__main__':
-#    app.run()
+if __name__ == '__main__':
+    app.run()

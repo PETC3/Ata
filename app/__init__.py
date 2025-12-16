@@ -67,9 +67,20 @@ def create_app(config_class=Config):
     # Os modelos precisam ser definidos antes de criar as tabelas ou rodar migrações.
     with app.app_context():
         from . import routes, models # Importa rotas e modelos do pacote 'app'
-
-        # (Opcional) Cria as tabelas se estiver usando SQLite e não quiser usar Migrations inicialmente
-        # db.create_all() # Descomente apenas se NÃO for usar Flask-Migrate inicialmente
+        # (Opcional) Cria as tabelas automaticamente quando estiver usando SQLite e
+        # o arquivo de banco ainda não existir. Isso é útil para desenvolvimento local
+        # sem precisar aplicar migrações (que podem ter especificidades de Postgres).
+        uri = app.config.get('SQLALCHEMY_DATABASE_URI', '') or ''
+        if uri.startswith('sqlite:///'):
+            db_path = uri.replace('sqlite:///', '', 1)
+            # Se o banco não existir, cria as tabelas automaticamente
+            try:
+                if not os.path.exists(db_path):
+                    db.create_all()
+                    print(f"SQLite DB not found; created new DB at: {db_path}")
+            except Exception as e:
+                # Se algo falhar aqui (ex: permissões), apenas logue a exceção
+                print(f"Warning: failed to auto-create sqlite DB: {e}")
 
         # Se estiver usando Blueprints, eles seriam registrados aqui:
         # from .auth import auth as auth_blueprint

@@ -122,7 +122,7 @@ def generate_ata_pdf(ata: 'Ata') -> bytes:
     buffer = io.BytesIO()
     pdf_document_title = f"Ata Reunião PET Ciências Computacionais - {ata.project.name} - {ata.meeting_datetime.strftime('%Y-%m-%d')}"
     
-    new_top_margin = 6.5 * cm # AJUSTE ESTE VALOR CONFORME NECESSÁRIO
+    new_top_margin = 6.5 * cm 
 
     doc = SimpleDocTemplate(
         buffer, pagesize=A4, leftMargin=3*cm, rightMargin=2*cm,
@@ -134,8 +134,6 @@ def generate_ata_pdf(ata: 'Ata') -> bytes:
     bold_font_name = "Times-Bold"
 
     styles.add(ParagraphStyle(name='ABNT_Corpo', parent=styles['Normal'], fontName=base_font_name, fontSize=12, leading=18, alignment=TA_JUSTIFY, firstLineIndent=1.25*cm, spaceBefore=0, spaceAfter=0 ))
-    # ABNT_ListaLabel e ABNT_ListItem não serão mais usados para ausentes se for no mesmo parágrafo.
-    # Mas podem ser úteis para outras listas, então vamos mantê-los definidos por enquanto.
     styles.add(ParagraphStyle(name='ABNT_ListaLabel', parent=styles['ABNT_Corpo'], fontName=bold_font_name, alignment=TA_LEFT, spaceBefore=0.3*cm, spaceAfter=0.1*cm, firstLineIndent=0))
     styles.add(ParagraphStyle(name='ABNT_ListItem', parent=styles['ABNT_Corpo'], leftIndent=1.25*cm, firstLineIndent=0, alignment=TA_JUSTIFY, spaceBefore=0, spaceAfter=0))
     styles.add(ParagraphStyle(name='LinhaAssinatura', parent=styles['Normal'], alignment=TA_CENTER, fontName='Courier', fontSize=12, spaceBefore=1*cm, spaceAfter=0.1*cm))
@@ -164,19 +162,63 @@ def generate_ata_pdf(ata: 'Ata') -> bytes:
     else:
         presentes_str_formatado = "sem a presença de integrantes registrados"
     
+    
+    # --------------------------------------------------------------------------
+    # NOVO BLOCO DE LÓGICA: Informações dos ausentes (Com e Sem Justificativa)
+    # --------------------------------------------------------------------------
+    
+    # 1. Obter membros ausentes e justificativas salvas
+    absent_members = ata.absent_members 
+    justifications_dict = ata.absent_justifications_dict # Obtém {member_id: justificativa}
+    
+    ausentes_com_justificativa = []
+    ausentes_sem_justificativa = []
+
+    for member in absent_members:
+        justificativa = justifications_dict.get(member.id)
+        
+        if justificativa and justificativa.strip():
+            # Membro ausente com justificativa
+            ausentes_com_justificativa.append(f"{member.name} (Motivo: {justificativa.strip()})")
+        else:
+            # Membro ausente sem justificativa registrada
+            ausentes_sem_justificativa.append(member.name)
 
 
-    # Informações dos ausentes
-    absent_members_nomes = sorted([m.name for m in ata.absent_members])
-    if absent_members_nomes:
-        if len(absent_members_nomes) == 1:
-            ausentes_str_formatado = f"Esteve ausente: {absent_members_nomes[0]}."
-        elif len(absent_members_nomes) > 1:
-            ausentes_str_formatado = f"Estiveram ausentes: {', '.join(absent_members_nomes[:-1])} e {absent_members_nomes[-1]}."
-        # Adiciona a informação dos ausentes à lista de partes do texto.
-        # Usamos um espaço antes para separar da frase anterior.
+    # 2. Construir as strings formatadas
+    ausentes_justificados_str = ""
+    ausentes_sem_justificativa_str = ""
+    
+    if ausentes_com_justificativa:
+        ausentes_justificados_str = (
+            f"Estiveram ausentes com justificativa: {', '.join(ausentes_com_justificativa)}. "
+        )
+        
+    if ausentes_sem_justificativa:
+        # Se houver ausentes sem justificativa, separamos a frase
+        sem_justificativa_nomes = (
+            f"{', '.join(ausentes_sem_justificativa[:-1])} e {ausentes_sem_justificativa[-1]}"
+            if len(ausentes_sem_justificativa) > 1
+            else ausentes_sem_justificativa[0]
+        )
+        ausentes_sem_justificativa_str = (
+            f"Estiveram ausentes sem justificativa: {sem_justificativa_nomes}."
+        )
 
-        # Início do texto introdutório
+    # 3. Combinar as strings para o texto introdutório
+    # Se ambos existirem, serão concatenados. Usamos .strip() para limpar espaços extras se uma das partes for vazia.
+    ausentes_str_formatado = (ausentes_justificados_str + ausentes_sem_justificativa_str).strip()
+    
+    # Garantir que a string não seja vazia se houver ausentes registrados
+    if not ausentes_str_formatado:
+        ausentes_str_formatado = "Nenhum membro ausente."
+
+    # --------------------------------------------------------------------------
+    # FIM DO NOVO BLOCO DE LÓGICA
+    # --------------------------------------------------------------------------
+
+
+    # Início do texto introdutório (USA O NOVO ausentes_str_formatado)
     intro_text_parts = [
         f"Aos {data_completa_extenso}, reuniram-se os integrantes do PET Ciências Computacionais {presentes_str_formatado}. {ausentes_str_formatado}"
     ]

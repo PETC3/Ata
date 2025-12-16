@@ -109,18 +109,43 @@
 
                             data.members.forEach(member => {
                                 const listItem = document.createElement('li');
+                                
+                                // 1. Checkbox de Presença
                                 const checkbox = document.createElement('input');
                                 checkbox.type = 'checkbox';
-                                checkbox.name = 'present_members';
+                                checkbox.name = 'present_members'; // Nome usado para salvar os presentes
                                 checkbox.value = member.id;
                                 checkbox.id = `member-${member.id}`;
+                                // Se houver dados de edição, você precisaria de lógica aqui para checar.
+                                // Por enquanto, vamos considerar apenas a criação.
 
+                                // 2. Rótulo do Membro
                                 const label = document.createElement('label');
                                 label.htmlFor = `member-${member.id}`;
                                 label.textContent = member.name;
 
+                                // 3. Campo de Justificativa (inicialmente desativado)
+                                const justificationInput = document.createElement('input');
+                                justificationInput.type = 'text';
+                                justificationInput.name = `justification_${member.id}`; // Nome único para cada membro
+                                justificationInput.placeholder = 'Justificativa de Ausência (opcional)';
+                                justificationInput.className = 'form-control justification-input';
+                                justificationInput.disabled = checkbox.checked; // Desativa se estiver presente
+
+                                // 4. Lógica de Ativação/Desativação da Justificativa
+                                // A justificativa SÓ deve ser preenchida se o membro estiver AUSENTE (checkbox desmarcada)
+                                checkbox.addEventListener('change', function() {
+                                    justificationInput.disabled = this.checked;
+                                    if (this.checked) {
+                                        justificationInput.value = ''; // Limpa se for marcado como presente
+                                    }
+                                });
+
+                                // Estrutura: [Checkbox] [Nome] [Campo Justificativa]
                                 listItem.appendChild(checkbox);
                                 listItem.appendChild(label);
+                                listItem.appendChild(justificationInput); // Adiciona o campo de texto
+                                
                                 list.appendChild(listItem);
                             });
                             membersListDiv.appendChild(list);

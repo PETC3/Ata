@@ -4,54 +4,69 @@ from datetime import datetime
 import enum
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
-from sqlalchemy import Enum as SQLAlchemyEnum # Renomeado para evitar conflito
+from sqlalchemy import Enum as SQLAlchemyEnum
 
 # Importa a instância 'db' e 'login_manager' criadas em app/__init__.py
 from . import db, login_manager
 
 # --- Tabelas de Associação (Muitos-para-Muitos) ---
 
-# Tabela para relacionar Projetos e Membros
+# Tabela para relacionar Projetos e Membros (Sem alteração)
 project_members = db.Table('project_members',
     db.Column('project_id', db.Integer, db.ForeignKey('project.id'), primary_key=True),
     db.Column('member_id', db.Integer, db.ForeignKey('member.id'), primary_key=True)
 )
 
-# Tabela para relacionar Atas e Membros Presentes
+# Tabela para relacionar Atas e Membros Presentes (Sem alteração - continua a registrar a presença)
 ata_present_members = db.Table('ata_present_members',
     db.Column('ata_id', db.Integer, db.ForeignKey('ata.id'), primary_key=True),
-    # Mantém a referência ao member.id mesmo se o membro for desativado
-    # ForeignKey sem ON DELETE CASCADE ou SET NULL para preservar o histórico
     db.Column('member_id', db.Integer, db.ForeignKey('member.id'), primary_key=True)
 )
 
+# --------------------------------------------------------------------------
+# NOVA CLASSE DE ASSOCIAÇÃO COM DADOS: Armazenará SOMENTE as Justificativas dos AUSENTES
+# --------------------------------------------------------------------------
+class AtaAbsentJustification(db.Model):
+    """Armazena a justificativa de um membro para uma ausência específica."""
+    __tablename__ = 'ata_absent_justification'
+
+    # Chaves Primárias
+    ata_id = db.Column(db.Integer, db.ForeignKey('ata.id'), primary_key=True)
+    member_id = db.Column(db.Integer, db.ForeignKey('member.id'), primary_key=True)
+    
+    # Campo para armazenar a justificativa (Obrigatório se o registro existir nesta tabela)
+    justification = db.Column(db.Text, nullable=False) 
+
+    # --- Relacionamentos de volta ---
+    ata = db.relationship("Ata", back_populates="absent_justifications")
+    member = db.relationship("Member") # O membro que justificou a ausência
+
+# --------------------------------------------------------------------------
+# Fim da Nova Classe
+# --------------------------------------------------------------------------
+
+
 # --- Modelos Principais ---
 
-# Função necessária pelo Flask-Login para carregar um usuário a partir do ID armazenado na sessão.
 @login_manager.user_loader
 def load_user(user_id):
     """Carrega o usuário pelo ID."""
-    # Busca na tabela User pelo ID primário
     return User.query.get(int(user_id))
 
 class User(UserMixin, db.Model):
     """Modelo para o usuário administrador (único neste caso)."""
-    __tablename__ = 'user' # Nome explícito da tabela
-
+    __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True, nullable=False)
-    password_hash = db.Column(db.String(256), nullable=False) # Hash pode ser longo
+    password_hash = db.Column(db.String(256), nullable=False)
 
     def set_password(self, password):
-        """Gera o hash da senha e armazena."""
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
-        """Verifica se a senha fornecida corresponde ao hash armazenado."""
         return check_password_hash(self.password_hash, password)
 
     def __repr__(self):
-        # Representação do objeto para debugging
         return f'<User {self.username}>'
 
 class Member(db.Model):
@@ -60,7 +75,6 @@ class Member(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False, index=True)
-    # Campo para controle de soft delete
     is_active = db.Column(db.Boolean, default=True, nullable=False, index=True)
 
     # --- RELACIONAMENTOS COM back_populates ---
@@ -68,23 +82,20 @@ class Member(db.Model):
     projects = db.relationship(
         'Project',
         secondary=project_members,
-        lazy='dynamic', # Permite filtrar depois (ex: member.projects.filter(...))
-        # Aponta para o atributo 'members' na classe Project
+        lazy='dynamic',
         back_populates='members'
     )
 
-    # Relacionamento com Atas onde esteve presente (Muitos-para-Muitos)
+    # Relacionamento com Atas onde esteve presente (Muitos-para-Muitos - Sem alteração)
     attended_meetings = db.relationship(
         'Ata',
         secondary=ata_present_members,
         lazy='dynamic',
-        # Aponta para o atributo 'present_members' na classe Ata
         back_populates='present_members'
     )
     # --- FIM DOS RELACIONAMENTOS ---
 
     def __repr__(self):
-        # Inclui status ativo/inativo na representação
         status = "ativo" if self.is_active else "inativo"
         return f'<Member {self.name} ({status})>'
 
@@ -94,24 +105,22 @@ class Project(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(150), unique=True, nullable=False, index=True)
-    logo = db.Column(db.String(200), nullable=True) # Nome do arquivo do logo
+    logo = db.Column(db.String(200), nullable=True)
 
     # --- RELACIONAMENTOS COM back_populates ---
-    # Relacionamento com Membros (Muitos-para-Muitos)
+    # Relacionamento com Membros (Muitos-para-Muitos - com sua correção anterior)
     members = db.relationship(
         'Member',
         secondary=project_members,
-        lazy='subquery', # Carrega membros junto com o projeto
-        # Aponta para o atributo 'projects' na classe Member
+        lazy='selectin',
         back_populates='projects'
     )
 
     # Relacionamento com Atas (Um-para-Muitos)
     atas = db.relationship(
         'Ata',
-        lazy='dynamic', # Permite filtrar atas depois (project.atas.filter(...))
-        cascade="all, delete-orphan", # Deleta atas se o projeto for deletado
-        # Aponta para o atributo 'project' na classe Ata
+        lazy='dynamic',
+        cascade="all, delete-orphan",
         back_populates='project'
     )
     # --- FIM DOS RELACIONAMENTOS ---
@@ -150,31 +159,36 @@ class Ata(db.Model):
     # Relacionamento com Projeto (Muitos-para-Um)
     project = db.relationship(
         'Project',
-        # Aponta para o atributo 'atas' na classe Project
         back_populates='atas'
     )
 
-    # Relacionamento com Membros Presentes (Muitos-para-Muitos)
+    # Relacionamento com Membros Presentes (Muitos-para-Muitos - com sua correção anterior)
     present_members = db.relationship(
         'Member',
         secondary=ata_present_members,
-        lazy='subquery', # Carrega presentes junto com a ata
-        # Aponta para o atributo 'attended_meetings' na classe Member
+        lazy='selectin',
         back_populates='attended_meetings'
+    )
+
+    # >>> NOVO RELACIONAMENTO: Justificativas de Ausência <<<
+    absent_justifications = db.relationship(
+        'AtaAbsentJustification',
+        back_populates='ata',
+        lazy='selectin',
+        cascade="all, delete-orphan",
     )
     # --- FIM DOS RELACIONAMENTOS ---
 
     @property
     def absent_members(self):
         """
-        Retorna uma lista de objetos Member que estavam associados ao projeto
-        mas não foram marcados como presentes nesta ata específica.
-        Nota: Pode incluir membros desativados após a ata.
+        Retorna uma lista de objetos Member que estavam ausentes (Membros do Projeto - Membros Presentes).
         """
         if not self.project or not hasattr(self.project, 'members'):
             return []
+        
         # Pega IDs de todos os membros já associados ao projeto
-        all_proj_member_ids = {m.id for m in self.project.members} # Usa o relacionamento principal
+        all_proj_member_ids = {m.id for m in self.project.members}
         # Pega IDs dos membros presentes nesta ata
         present_member_ids = {m.id for m in self.present_members}
 
@@ -185,6 +199,15 @@ class Ata(db.Model):
             return list(Member.query.filter(Member.id.in_(absent_member_ids)).all())
         else:
             return []
+            
+    # >>> NOVA PROPRIEDADE: Obtém as justificativas de ausência como um dicionário
+    @property
+    def absent_justifications_dict(self):
+        """Retorna um dicionário {member_id: justification} para ausentes justificados."""
+        return {
+            rec.member_id: rec.justification
+            for rec in self.absent_justifications
+        }
 
     def __repr__(self):
          project_name = self.project.name if self.project else 'N/A'
